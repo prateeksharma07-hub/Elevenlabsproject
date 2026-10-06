@@ -1,0 +1,85 @@
+/* AURA Design System Design Tokens */
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700;800&display=swap');
+
+:root {
+  /* Color System */
+  --bg-void: #030509;
+  --bg-void-card: rgba(8, 14, 26, 0.72);
+  --bg-void-card-hover: rgba(12, 22, 40, 0.85);
+  --bg-glass-input: rgba(15, 23, 42, 0.65);
+
+  --accent-cyan: #22d3ee;
+  --accent-indigo: #6366f1;
+  --accent-purple: #a855f7;
+  --accent-pink: #ec4899;
+  --accent-amber: #f59e0b;
+  --accent-emerald: #10b981;
+  --accent-rose: #f43f5e;
+
+  --glow-cyan: rgba(34, 211, 238, 0.35);
+  --glow-indigo: rgba(99, 102, 241, 0.35);
+  --glow-purple: rgba(168, 85, 247, 0.3);
+
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-glass: rgba(34, 211, 238, 0.18);
+  --border-glass-focus: rgba(34, 211, 238, 0.6);
+
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+
+  /* Typography */
+  --font-display: 'Space Grotesk', -apple-system, sans-serif;
+  --font-body: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Geometry & Shadows */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-full: 9999px;
+
+  --shadow-ambient: 0 20px 60px rgba(0, 0, 0, 0.8);
+  --shadow-glass: 0 16px 40px rgba(0, 0, 0, 0.6), 0 0 24px rgba(34, 211, 238, 0.06);
+  --shadow-glow: 0 0 30px var(--glow-cyan);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100%;
+  min-height: 100vh;
+  background-color: var(--bg-void);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.5;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-void);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius-full);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-cyan);
+}
+
+::selection {
+  background: rgba(34, 211, 238, 0.3);
+  color: #fff;
+}
