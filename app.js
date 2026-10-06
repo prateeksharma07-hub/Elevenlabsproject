@@ -6,6 +6,22 @@
  * real-time waveform visualization, and cinematic micro-animations.
  */
 
+// Access GSAP, ScrollTrigger, and Lenis from window (vendor scripts or global)
+const gsap = typeof window !== 'undefined' ? window.gsap : undefined;
+const ScrollTrigger = typeof window !== 'undefined' ? window.ScrollTrigger : undefined;
+const Lenis = typeof window !== 'undefined' ? window.Lenis : undefined;
+
+let lenis = null;
+let masterTimeline = null;
+
+if (gsap && ScrollTrigger && typeof gsap.registerPlugin === 'function') {
+  try {
+    gsap.registerPlugin(ScrollTrigger);
+  } catch (e) {
+    console.warn('[AURA] ScrollTrigger registration notice:', e);
+  }
+}
+
 // ==========================================
 // 🔑 API KEY (Set here, in Settings modal, or via .env.local)
 // ==========================================
@@ -216,44 +232,429 @@ function initCardTilt() {
   if (!card) return;
 
   card.addEventListener('mousemove', (e) => {
+    // If interacting directly with an interactive control, keep card level to avoid distraction
+    if (e.target.closest('input, select, textarea, button, .chip')) {
+      card.style.transform = 'perspective(1200px) rotateX(0deg) rotateY(0deg)';
+      return;
+    }
     const rect = card.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
     const centerX = rect.width / 2;
     const centerY = rect.height / 2;
-    const rotateX = ((y - centerY) / centerY) * -2;
-    const rotateY = ((x - centerX) / centerX) * 2;
-    card.style.transform = `perspective(1200px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+    // Extremely subtle, professional tilt (max ±1.2deg)
+    const rotateX = ((y - centerY) / centerY) * -1.2;
+    const rotateY = ((x - centerX) / centerX) * 1.2;
+    card.style.transform = `perspective(1200px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg)`;
   });
   card.addEventListener('mouseleave', () => {
     card.style.transform = 'perspective(1200px) rotateX(0deg) rotateY(0deg)';
-    card.style.transition = 'transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)';
-    setTimeout(() => { card.style.transition = ''; }, 600);
+    card.style.transition = 'transform 0.5s cubic-bezier(0.16, 1, 0.3, 1)';
+    setTimeout(() => { card.style.transition = ''; }, 500);
   });
 }
 
 // ==========================================
-// 🚀 INITIALIZATION
+// 🛡️ GRACEFUL FALLBACK & RECOVERY HELPERS
 // ==========================================
-document.addEventListener('DOMContentLoaded', () => {
-  initParticles();
-  initCursor();
-  initCardTilt();
-  initVoiceAndModelListeners();
-  initSampleChips();
-  initTextareaCounters();
-  initAcousticSliders();
-  initAudioControls();
-  initModals();
-  initCanvasVisualizer();
-  initTranslationModule();
-  initHeaderNavigation();
-  initPreloader();
-  initScrollReveal();
-  initFooterControls();
-  initColorThemes();
-  loadSampleScript('trailer');
-});
+function forceDismissPreloader() {
+  const preloader = $('#app-preloader');
+  if (preloader) {
+    preloader.classList.add('loaded');
+    preloader.style.display = 'none';
+  }
+  try { ScrollTrigger.refresh(); } catch (e) {}
+}
+
+function applyFallbackStage(reason) {
+  console.warn('[AURA] Activating graceful 3D fallback mode. Reason:', reason);
+  window.__fallback_reason = reason;
+  const main = $('.app-main');
+  if (main) main.classList.add('fallback-3d');
+  const scenes = document.querySelectorAll('.scene');
+  scenes.forEach(s => {
+    s.style.opacity = '1';
+    s.style.visibility = 'visible';
+    s.style.pointerEvents = 'auto';
+    s.style.transform = 'none';
+    s.classList.add('active');
+  });
+}
+
+// ==========================================
+// 🚀 BULLETPROOF INITIALIZATION BOOTLOADER
+// ==========================================
+function boot() {
+  console.log('[AURA] Booting Neural Speech Studio systems...');
+
+  // 1. INITIALIZE EXISTING APPLICATION (Core functional systems guaranteed to work)
+  try { initVoiceAndModelListeners(); } catch (e) { console.error('[AURA] Voice/Model listeners failed:', e); }
+  try { initSampleChips(); } catch (e) { console.error('[AURA] Sample chips failed:', e); }
+  try { initTextareaCounters(); } catch (e) { console.error('[AURA] Textarea counters failed:', e); }
+  try { initAcousticSliders(); } catch (e) { console.error('[AURA] Acoustic sliders failed:', e); }
+  try { initAudioControls(); } catch (e) { console.error('[AURA] Audio controls failed:', e); }
+  try { initModals(); } catch (e) { console.error('[AURA] Modals failed:', e); }
+  try { initCanvasVisualizer(); } catch (e) { console.error('[AURA] Visualizer failed:', e); }
+  try { initTranslationModule(); } catch (e) { console.error('[AURA] Translation failed:', e); }
+  try { initFooterControls(); } catch (e) { console.error('[AURA] Footer controls failed:', e); }
+  try { initColorThemes(); } catch (e) { console.error('[AURA] Color themes failed:', e); }
+  try { initHeaderNavigation(); } catch (e) { console.error('[AURA] Navigation failed:', e); }
+  try { loadSampleScript('trailer'); } catch (e) { console.warn('[AURA] Sample load notice:', e); }
+
+  // Visual & Aesthetic micro-interactions
+  try { initParticles(); } catch (e) { console.warn('[AURA] Particles notice:', e); }
+  try { initCursor(); } catch (e) { console.warn('[AURA] Cursor notice:', e); }
+  try { initCardTilt(); } catch (e) { console.warn('[AURA] Card tilt notice:', e); }
+  try { initScrollReveal(); } catch (e) { console.warn('[AURA] Scroll reveal notice:', e); }
+
+  // 2. INITIALIZE LENIS (Smooth scroll)
+  try {
+    initLenis();
+  } catch (e) {
+    console.warn('[AURA] Lenis notice:', e);
+  }
+
+  // 3. INITIALIZE GSAP / SCROLLTRIGGER + SCENE INITIAL STATES + IMMERSIVE TIMELINE
+  try {
+    initImmersive3DStage();
+  } catch (e) {
+    console.error('[AURA] 3D Stage error:', e);
+    applyFallbackStage('boot catch: ' + (e?.message || e));
+  }
+
+  // 4. SAFELY DISMISS PRELOADER
+  // (Fired once scene initial states and all systems are cleanly established)
+  try {
+    initPreloader();
+  } catch (err) {
+    console.error('[AURA] Preloader init error:', err);
+    forceDismissPreloader();
+  }
+}
+
+// ==========================================
+// 🌊 SMOOTH SCROLL (LENIS) & 3D STAGE ORCHESTRATION
+// ==========================================
+function initLenis() {
+  try {
+    if (typeof Lenis !== 'function') {
+      console.warn('[AURA] Lenis library not loaded.');
+      return;
+    }
+    lenis = new Lenis({
+      duration: 0.90,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -7 * t)),
+      smoothWheel: true,
+      wheelMultiplier: 0.95,
+      touchMultiplier: 1.1
+    });
+
+    lenis.on('scroll', () => {
+      try { ScrollTrigger.update(); } catch (e) {}
+    });
+
+    if (typeof gsap !== 'undefined' && gsap.ticker) {
+      gsap.ticker.add((time) => {
+        try { lenis.raf(time * 1000); } catch (e) {}
+      });
+      gsap.ticker.lagSmoothing(0);
+    }
+  } catch (e) {
+    console.warn('[AURA] Lenis initialization notice:', e);
+  }
+}
+
+function getSceneScrollTarget(targetId) {
+  const container = $('#immersive-scroll');
+  if (!container) return 0;
+  const maxScroll = container.offsetHeight - window.innerHeight;
+  // Precise anchor points corresponding to each scene's prime focal plateau
+  const map = {
+    'scene-01': 0,
+    'brand-logo': 0,
+    'main-card': 0.48,        // Center of Scene 02 plateau (0.38 - 0.58)
+    'accordion-toggle': 0.48,
+    'player-dock': 0.82,      // Center of Scene 03 plateau (0.76 - 0.88)
+    'visualizer-arena': 0.82
+  };
+  const ratio = map[targetId] !== undefined ? map[targetId] : 0;
+  return ratio * Math.max(0, maxScroll);
+}
+
+function smoothScrollToTarget(targetId) {
+  const targetPos = getSceneScrollTarget(targetId);
+  if (lenis) {
+    lenis.scrollTo(targetPos, { duration: 0.90, easing: (t) => Math.min(1, 1.001 - Math.pow(2, -7 * t)) });
+  } else {
+    window.scrollTo({ top: targetPos, behavior: 'smooth' });
+  }
+}
+
+function updateActiveNavOnScroll(progress) {
+  const navBtns = $$('.nav-btn, .mobile-nav-btn');
+  let currentTarget = 'main-card';
+  if (progress < 0.20) {
+    currentTarget = 'scene-01';
+  } else if (progress < 0.62) {
+    currentTarget = 'main-card';
+  } else if (progress < 0.92) {
+    currentTarget = 'player-dock';
+  } else {
+    currentTarget = 'main-card';
+  }
+
+  navBtns.forEach(btn => {
+    const t = btn.getAttribute('data-target');
+    btn.classList.toggle('active', t === currentTarget);
+  });
+}
+
+function initImmersive3DStage() {
+  try {
+    const scrollContainer = $('#immersive-scroll');
+    const stage = $('#immersive-stage');
+    const scene1 = $('#scene-01');
+    const scene2 = $('#scene-02');
+    const scene3 = $('#scene-03');
+    const scene4 = $('#scene-04');
+    const scene5 = $('#scene-05');
+
+    if (!scrollContainer || !stage || !scene1 || !scene2 || !scene3) {
+      applyFallbackStage('missing DOM elements: scroll=' + !!scrollContainer + ', stage=' + !!stage + ', s1=' + !!scene1 + ', s2=' + !!scene2 + ', s3=' + !!scene3);
+      return;
+    }
+
+    if (typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') {
+      applyFallbackStage('gsap or ScrollTrigger undefined: gsap=' + typeof gsap + ', st=' + typeof ScrollTrigger);
+      return;
+    }
+
+    // ----------------------------------------------------
+    // GSAP INITIAL STATES:
+    // Established immediately and synchronously.
+    // There must never be a moment where all scenes are simultaneously visible.
+    // ----------------------------------------------------
+    gsap.set([scene1, scene2, scene3, scene4, scene5], {
+      transformPerspective: 1600,
+      transformStyle: "preserve-3d",
+      backfaceVisibility: "hidden"
+    });
+
+    // Scene 01: Fully visible at camera focal origin, ready to advance
+    gsap.set(scene1, {
+      autoAlpha: 1,
+      scale: 1,
+      z: 0,
+      rotateX: 0,
+      rotateY: 0,
+      pointerEvents: 'auto'
+    });
+
+    // Sub-layers in Scene 01 for subtle depth & parallax
+    gsap.set('#scene-01 .hero-badge', { z: 35, y: 0, opacity: 1 });
+    gsap.set('#scene-01 .hero-title', { z: 20, y: 0, scale: 1, opacity: 1 });
+    gsap.set('#scene-01 .hero-subtitle', { z: 5, y: 0, opacity: 1 });
+    gsap.set('#scene-01 .hero-scroll-hint', { opacity: 0.85 });
+    gsap.set('#scene-01 .spatial-bracket.left', { z: -25, x: 0, opacity: 0.6 });
+    gsap.set('#scene-01 .spatial-bracket.right', { z: -25, x: 0, opacity: 0.6 });
+    gsap.set('#scene-01 .spatial-grid-plane', { z: -150, opacity: 0.6 });
+    gsap.set('#scene-01 .cyan-halo', { z: -200, opacity: 0.35, scale: 1 });
+
+    // Scene 02: Waiting in depth along the camera corridor
+    gsap.set(scene2, {
+      autoAlpha: 0,
+      scale: 0.80,
+      z: -550,
+      rotateX: 2,
+      rotateY: 0,
+      pointerEvents: 'none'
+    });
+
+    // Scene 03: Waiting deeper along the camera corridor
+    gsap.set(scene3, {
+      autoAlpha: 0,
+      scale: 0.75,
+      z: -1100,
+      rotateX: 2,
+      rotateY: 0,
+      pointerEvents: 'none'
+    });
+
+    // Scene 04 & 05: Held inactive and hidden (not implemented yet)
+    if (scene4) gsap.set(scene4, { autoAlpha: 0, scale: 0.7, z: -1600, pointerEvents: 'none' });
+    if (scene5) gsap.set(scene5, { autoAlpha: 0, scale: 0.7, z: -2000, pointerEvents: 'none' });
+
+    const mm = gsap.matchMedia();
+
+    // Desktop (> 768px): Cinematic 3D Depth Travel Corridor
+    mm.add("(min-width: 769px)", () => {
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: scrollContainer,
+          start: "top top",
+          end: "bottom bottom",
+          scrub: 0.25,
+          pin: stage,
+          anticipatePin: 1,
+          onUpdate: (self) => {
+            const p = self.progress;
+            updateActiveNavOnScroll(p);
+
+            // Precision pointer-events: ONLY the currently dominant active scene accepts interaction
+            const isScene1Active = p < 0.16;
+            const isScene2Active = p >= 0.36 && p <= 0.60;
+            const isScene3Active = p >= 0.74 && p <= 0.90;
+
+            scene1.style.pointerEvents = isScene1Active ? 'auto' : 'none';
+            scene2.style.pointerEvents = isScene2Active ? 'auto' : 'none';
+            scene3.style.pointerEvents = isScene3Active ? 'auto' : 'none';
+            if (scene4) scene4.style.pointerEvents = 'none';
+            if (scene5) scene5.style.pointerEvents = 'none';
+
+            scene1.classList.toggle('active', isScene1Active);
+            scene2.classList.toggle('active', isScene2Active);
+            scene3.classList.toggle('active', isScene3Active);
+            if (scene4) scene4.classList.toggle('active', false);
+            if (scene5) scene5.classList.toggle('active', false);
+          }
+        }
+      });
+
+      // ========================================================
+      // 0.00 -> 0.12: Initial camera departure & subtle parallax
+      // ========================================================
+      tl.to('#scene-01 .hero-scroll-hint', { autoAlpha: 0, duration: 0.05, ease: "power1.out" }, 0);
+      tl.to('#scene-01 .hero-badge', { z: 120, y: -20, duration: 0.25, ease: "power1.inOut" }, 0);
+      tl.to('#scene-01 .hero-title', { z: 90, scale: 1.08, y: -15, duration: 0.25, ease: "power1.inOut" }, 0);
+      tl.to('#scene-01 .hero-subtitle', { z: 40, y: -10, duration: 0.25, ease: "power1.inOut" }, 0);
+      tl.to('#scene-01 .spatial-bracket.left', { x: -35, z: 20, opacity: 0.1, duration: 0.25, ease: "power1.inOut" }, 0);
+      tl.to('#scene-01 .spatial-bracket.right', { x: 35, z: 20, opacity: 0.1, duration: 0.25, ease: "power1.inOut" }, 0);
+      tl.to('#scene-01 .spatial-grid-plane', { z: -80, opacity: 0.2, duration: 0.25, ease: "power1.inOut" }, 0);
+      tl.to('#scene-01 .cyan-halo', { z: -120, opacity: 0.1, duration: 0.25, ease: "power1.inOut" }, 0);
+
+      tl.to(scene1, { z: 70, scale: 1.04, rotateX: -0.5, duration: 0.12, ease: "power1.in" }, 0);
+
+      // ========================================================
+      // 0.12 -> 0.38: Continuous Handoff (Scene 01 -> Scene 02)
+      // Camera moves continuously: Scene 01 passes camera, Scene 02 approaches
+      // ========================================================
+      tl.to(scene1, { z: 340, scale: 1.20, rotateX: -2, duration: 0.26, ease: "power1.inOut" }, 0.12);
+      tl.to(scene1, { autoAlpha: 0, duration: 0.18, ease: "power1.inOut" }, 0.18);
+
+      tl.to(scene2, { z: 0, scale: 1.0, rotateX: 0, duration: 0.26, ease: "power1.inOut" }, 0.12);
+      tl.to(scene2, { autoAlpha: 1, duration: 0.20, ease: "power1.inOut" }, 0.16);
+
+      // Scene 03 moves forward in the background corridor
+      tl.to(scene3, { z: -550, scale: 0.80, duration: 0.26, ease: "power1.inOut" }, 0.12);
+
+      // ========================================================
+      // 0.38 -> 0.58: Scene 02 Focal Plateau (Voice Studio)
+      // Rock-solid at Z: 0, scale: 1.0, 100% interactive
+      // ========================================================
+      tl.to(scene2, { z: 0, scale: 1.0, rotateX: 0, autoAlpha: 1, duration: 0.20 }, 0.38);
+
+      // ========================================================
+      // 0.56 -> 0.78: Continuous Handoff (Scene 02 -> Scene 03)
+      // Overlapping continuous travel without stop-start breaks
+      // ========================================================
+      tl.to(scene2, { z: 320, scale: 1.18, rotateX: -2, duration: 0.22, ease: "power1.inOut" }, 0.56);
+      tl.to(scene2, { autoAlpha: 0, duration: 0.16, ease: "power1.inOut" }, 0.58);
+
+      tl.to(scene3, { z: 0, scale: 1.0, rotateX: 0, duration: 0.22, ease: "power1.inOut" }, 0.56);
+      tl.to(scene3, { autoAlpha: 1, duration: 0.16, ease: "power1.inOut" }, 0.58);
+
+      // ========================================================
+      // 0.76 -> 0.88: Scene 03 Focal Plateau (Visualizer Arena)
+      // Rock-solid at Z: 0, scale: 1.0, 100% interactive
+      // ========================================================
+      tl.to(scene3, { z: 0, scale: 1.0, rotateX: 0, autoAlpha: 1, duration: 0.12 }, 0.76);
+
+      // ========================================================
+      // 0.88 -> 1.00: Scene 03 Gentle Outro Drift
+      // ========================================================
+      tl.to(scene3, { z: 240, scale: 1.12, rotateX: -1.5, duration: 0.12, ease: "power1.inOut" }, 0.88);
+      tl.to(scene3, { autoAlpha: 0, duration: 0.08, ease: "power1.inOut" }, 0.92);
+
+      masterTimeline = tl;
+    });
+
+    // Mobile (<= 768px): Touch-Optimized 2.5D with matching phase overlaps
+    mm.add("(max-width: 768px)", () => {
+      gsap.set([scene1, scene2, scene3, scene4, scene5], {
+        transformPerspective: 1000,
+        transformStyle: "preserve-3d"
+      });
+
+      gsap.set(scene1, { autoAlpha: 1, y: 0, scale: 1, pointerEvents: 'auto' });
+      gsap.set(scene2, { autoAlpha: 0, y: 50, scale: 0.95, pointerEvents: 'none' });
+      gsap.set(scene3, { autoAlpha: 0, y: 50, scale: 0.95, pointerEvents: 'none' });
+      if (scene4) gsap.set(scene4, { autoAlpha: 0, y: 50, scale: 0.95, pointerEvents: 'none' });
+      if (scene5) gsap.set(scene5, { autoAlpha: 0, y: 50, scale: 0.95, pointerEvents: 'none' });
+
+      const tlMobile = gsap.timeline({
+        scrollTrigger: {
+          trigger: scrollContainer,
+          start: "top top",
+          end: "bottom bottom",
+          scrub: 0.25,
+          pin: stage,
+          onUpdate: (self) => {
+            const p = self.progress;
+            updateActiveNavOnScroll(p);
+
+            const isScene1Active = p < 0.16;
+            const isScene2Active = p >= 0.36 && p <= 0.60;
+            const isScene3Active = p >= 0.74 && p <= 0.90;
+
+            scene1.style.pointerEvents = isScene1Active ? 'auto' : 'none';
+            scene2.style.pointerEvents = isScene2Active ? 'auto' : 'none';
+            scene3.style.pointerEvents = isScene3Active ? 'auto' : 'none';
+            if (scene4) scene4.style.pointerEvents = 'none';
+            if (scene5) scene5.style.pointerEvents = 'none';
+
+            scene1.classList.toggle('active', isScene1Active);
+            scene2.classList.toggle('active', isScene2Active);
+            scene3.classList.toggle('active', isScene3Active);
+            if (scene4) scene4.classList.toggle('active', false);
+            if (scene5) scene5.classList.toggle('active', false);
+          }
+        }
+      });
+
+      // 0.00 - 0.12: Scene 01 dominant
+      tlMobile.to('#scene-01 .hero-scroll-hint', { autoAlpha: 0, duration: 0.05 }, 0);
+      tlMobile.to(scene1, { y: 0, duration: 0.12 }, 0);
+
+      // 0.12 - 0.38: Continuous handoff: Scene 01 exits, Scene 02 enters with overlap
+      tlMobile.to(scene1, { y: -50, autoAlpha: 0, scale: 0.96, duration: 0.26, ease: "power1.inOut" }, 0.12);
+      tlMobile.to(scene2, { y: 0, autoAlpha: 1, scale: 1, duration: 0.26, ease: "power1.inOut" }, 0.12);
+
+      // 0.38 - 0.58: Scene 02 plateau
+      tlMobile.to(scene2, { y: 0, autoAlpha: 1, duration: 0.20 }, 0.38);
+
+      // 0.56 - 0.78: Continuous handoff: Scene 02 exits, Scene 03 enters with overlap
+      tlMobile.to(scene2, { y: -50, autoAlpha: 0, scale: 0.96, duration: 0.22, ease: "power1.inOut" }, 0.56);
+      tlMobile.to(scene3, { y: 0, autoAlpha: 1, scale: 1, duration: 0.22, ease: "power1.inOut" }, 0.56);
+
+      // 0.76 - 0.88: Scene 03 plateau
+      tlMobile.to(scene3, { y: 0, autoAlpha: 1, duration: 0.12 }, 0.76);
+
+      // 0.88 - 1.00: Scene 03 exits
+      tlMobile.to(scene3, { y: -50, autoAlpha: 0, scale: 0.96, duration: 0.12, ease: "power1.inOut" }, 0.88);
+
+      masterTimeline = tlMobile;
+    });
+
+    // Anchor buttons
+    const heroHint = $('#hero-scroll-hint');
+    if (heroHint) heroHint.addEventListener('click', () => smoothScrollToTarget('main-card'));
+    const finaleReturn = $('#finale-return-btn');
+    if (finaleReturn) finaleReturn.addEventListener('click', () => smoothScrollToTarget('main-card'));
+  } catch (err) {
+    console.error('[AURA] Immersive 3D stage initialization error:', err);
+    applyFallbackStage('initImmersive3DStage catch: ' + (err?.message || err));
+  }
+}
 
 // ==========================================
 // 🔑 API KEY RETRIEVAL
@@ -338,8 +739,7 @@ function initAcousticSliders() {
 // ==========================================
 // ⚡ CORE TTS SYNTHESIS
 // ==========================================
-playButton.addEventListener('click', handleGenerateAndPlay);
-stopButton.addEventListener('click', stopAudioPlayback);
+// Note: playButton and stopButton listeners attached safely inside initAudioControls()
 
 async function handleGenerateAndPlay() {
   if (isGenerating) return;
@@ -496,6 +896,8 @@ function initCanvasVisualizer() {
   window.addEventListener('resize', resize);
 
   let phase = 0;
+  const ringsEl = $('.acoustic-rings-wrap');
+  let ringsModified = false;
 
   function render() {
     requestAnimationFrame(render);
@@ -530,7 +932,23 @@ function initCanvasVisualizer() {
         ctx.fill();
         ctx.shadowBlur = 0;
       }
+
+      // Audio reactive effect on 3D surrounding elements
+      let sumEnergy = 0;
+      for (let i = 0; i < bufLen; i++) sumEnergy += data[i];
+      const avgEnergy = sumEnergy / (bufLen * 255);
+      if (ringsEl) {
+        // Subtle, elegant acoustic reactivity
+        ringsEl.style.transform = `translateZ(-80px) scale(${(1 + avgEnergy * 0.12).toFixed(3)})`;
+        ringsEl.style.opacity = `${(0.35 + avgEnergy * 0.40).toFixed(2)}`;
+        ringsModified = true;
+      }
     } else {
+      if (ringsModified && ringsEl) {
+        ringsEl.style.transform = 'translateZ(-80px) scale(1)';
+        ringsEl.style.opacity = '0.35';
+        ringsModified = false;
+      }
       // Idle ambient waves
       phase += 0.025;
       for (let wave = 0; wave < 3; wave++) {
@@ -565,7 +983,9 @@ function roundRect(ctx, x, y, w, h, r) {
 // 🎚️ AUDIO CONTROLS
 // ==========================================
 function initAudioControls() {
-  replayBtn.addEventListener('click', () => { if (currentAudio) { currentAudio.currentTime = 0; currentAudio.play(); } });
+  if (playButton) playButton.addEventListener('click', handleGenerateAndPlay);
+  if (stopButton) stopButton.addEventListener('click', stopAudioPlayback);
+  if (replayBtn) replayBtn.addEventListener('click', () => { if (currentAudio) { currentAudio.currentTime = 0; currentAudio.play(); } });
 
   downloadBtn.addEventListener('click', () => {
     if (!currentAudioBlob) return;
@@ -947,11 +1367,8 @@ function initTranslationModule() {
     modelSelect.value = 'eleven_multilingual_v2';
     modelSelect.dispatchEvent(new Event('change'));
 
-    // Smooth scroll to studio
-    const mainCard = $('#main-card');
-    if (mainCard) {
-      mainCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+    // Smooth scroll to studio scene
+    smoothScrollToTarget('main-card');
 
     showToast(`Transferred to studio using Eleven Multilingual v2 (${MULTILINGUAL_DATA.names[currentTargetLang] || currentTargetLang})!`, 'success');
 
@@ -972,13 +1389,12 @@ function initHeaderNavigation() {
   const brandLogo = $('#brand-logo');
   const headerInspireBtn = $('#header-inspire-btn');
 
-  // Smooth Navigation Links
+  // Smooth Navigation Links mapped to 3D Scene scroll targets
   navBtns.forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.preventDefault();
       const targetId = btn.getAttribute('data-target');
       const action = btn.getAttribute('data-action');
-      const targetEl = document.getElementById(targetId);
 
       if (action === 'toggle-accordion') {
         const accordionContent = $('#accordion-content');
@@ -987,19 +1403,9 @@ function initHeaderNavigation() {
           accordionContent.classList.add('open');
           accordionIcon.classList.add('open');
         }
-      }
-
-      if (targetEl) {
-        const offset = 85;
-        const bodyRect = document.body.getBoundingClientRect().top;
-        const elementRect = targetEl.getBoundingClientRect().top;
-        const elementPosition = elementRect - bodyRect;
-        const offsetPosition = elementPosition - offset;
-
-        window.scrollTo({
-          top: offsetPosition,
-          behavior: 'smooth'
-        });
+        smoothScrollToTarget('main-card');
+      } else if (targetId) {
+        smoothScrollToTarget(targetId);
       }
 
       // Update active nav button state
@@ -1021,10 +1427,10 @@ function initHeaderNavigation() {
     });
   }
 
-  // Brand logo click smoothly scrolls to top
+  // Brand logo click smoothly scrolls to top (Scene 01)
   if (brandLogo) {
     brandLogo.addEventListener('click', () => {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      smoothScrollToTarget('scene-01');
     });
   }
 
@@ -1050,34 +1456,10 @@ function initHeaderNavigation() {
       const voiceName = voiceSelect.options[voiceSelect.selectedIndex].text.split('—')[0].trim();
       showToast(`✨ Inspire: Loaded "${randomScript.toUpperCase()}" with voice ${voiceName}!`, 'info');
 
-      // Scroll to studio
-      const mainCard = $('#main-card');
-      if (mainCard) {
-        mainCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
+      // Scroll to studio scene
+      smoothScrollToTarget('main-card');
     });
   }
-
-  // Scrollspy to highlight active nav button on scroll
-  window.addEventListener('scroll', () => {
-    const scrollPos = window.scrollY + 180;
-    const sections = [
-      { id: 'player-dock', nav: 'player-dock' },
-      { id: 'translate-section', nav: 'translate-section' },
-      { id: 'accordion-toggle', nav: 'accordion-toggle' },
-      { id: 'main-card', nav: 'main-card' }
-    ];
-
-    for (const sec of sections) {
-      const el = document.getElementById(sec.id);
-      if (el && scrollPos >= el.offsetTop) {
-        navBtns.forEach(b => {
-          b.classList.toggle('active', b.getAttribute('data-target') === sec.nav);
-        });
-        break;
-      }
-    }
-  }, { passive: true });
 }
 
 // ==========================================
@@ -1093,15 +1475,6 @@ function initPreloader() {
 
   if (!preloader) return;
 
-  const sequence = [
-    { p: 18, status: "Mounting WebAudio pipeline...", log: "INITIALIZING ACOUSTIC NEURAL TENSORS [OK]" },
-    { p: 46, status: "Loading 29+ global voice personas...", log: "SYNCHRONIZING MULTILINGUAL ACOUSTICS [OK]" },
-    { p: 78, status: "Calibrating real-time spectrum visualizer...", log: "CONNECTING HTML5 CANVAS ANALYSER [OK]" },
-    { p: 100, status: "ElevenLabs speech pipeline ready.", log: "AURA NEURAL STUDIO ONLINE" }
-  ];
-
-  let currentPercent = 0;
-  let seqIdx = 0;
   let finished = false;
 
   function dismissPreloader() {
@@ -1112,6 +1485,7 @@ function initPreloader() {
     preloader.classList.add('loaded');
     setTimeout(() => {
       preloader.style.display = 'none';
+      try { ScrollTrigger.refresh(); } catch (e) {}
       // Trigger initial scroll reveal check
       document.querySelectorAll('.reveal-on-scroll').forEach(el => {
         const rect = el.getBoundingClientRect();
@@ -1119,21 +1493,42 @@ function initPreloader() {
           el.classList.add('revealed');
         }
       });
-    }, 600);
+    }, 500);
   }
 
+  // Skip button is immediately interactive from the very first frame
   if (skipBtn) {
     skipBtn.addEventListener('click', dismissPreloader);
   }
 
-  // Fast & smooth cinematic intro sequence (~1.1 seconds)
+  // Hard safety watchdog: Unconditionally dismisses preloader after 2.0s
+  // Prevents user from being permanently trapped regardless of network latency or browser glitches
+  setTimeout(() => {
+    if (!finished) {
+      console.log('[AURA] Safety watchdog: completing preloader sequence.');
+      dismissPreloader();
+    }
+  }, 2000);
+
+  const sequence = [
+    { p: 20, status: "Mounting WebAudio pipeline...", log: "INITIALIZING ACOUSTIC NEURAL TENSORS [OK]" },
+    { p: 50, status: "Loading 29+ global voice personas...", log: "SYNCHRONIZING MULTILINGUAL ACOUSTICS [OK]" },
+    { p: 80, status: "Calibrating real-time spectrum visualizer...", log: "CONNECTING HTML5 CANVAS ANALYSER [OK]" },
+    { p: 100, status: "ElevenLabs speech pipeline ready.", log: "AURA NEURAL STUDIO ONLINE" }
+  ];
+
+  let seqIdx = 0;
   const startTime = Date.now();
-  const duration = 1100;
+  const duration = 950; // Smooth, brisk loading feel
 
   const interval = setInterval(() => {
+    if (finished) {
+      clearInterval(interval);
+      return;
+    }
     const elapsed = Date.now() - startTime;
     const rawProgress = Math.min(1, elapsed / duration);
-    currentPercent = Math.floor(rawProgress * 100);
+    const currentPercent = Math.floor(rawProgress * 100);
 
     if (progressEl) progressEl.style.width = `${currentPercent}%`;
     if (percentEl) percentEl.textContent = `${currentPercent}%`;
@@ -1146,7 +1541,7 @@ function initPreloader() {
 
     if (rawProgress >= 1) {
       clearInterval(interval);
-      setTimeout(dismissPreloader, 200);
+      setTimeout(dismissPreloader, 150);
     }
   }, 25);
 }
@@ -1186,20 +1581,7 @@ function initFooterControls() {
   footerLinks.forEach(btn => {
     btn.addEventListener('click', () => {
       const targetId = btn.getAttribute('data-target');
-      if (!targetId) return;
-      const targetEl = document.getElementById(targetId);
-      if (targetEl) {
-        const offset = 85;
-        const bodyRect = document.body.getBoundingClientRect().top;
-        const elementRect = targetEl.getBoundingClientRect().top;
-        const elementPosition = elementRect - bodyRect;
-        const offsetPosition = elementPosition - offset;
-
-        window.scrollTo({
-          top: offsetPosition,
-          behavior: 'smooth'
-        });
-      }
+      if (targetId) smoothScrollToTarget(targetId);
     });
   });
 
@@ -1251,6 +1633,21 @@ function initColorThemes() {
       applyTheme(themeKey, true);
     });
   });
+}
+
+// ==========================================
+// 🛡️ WINDOW WATCHDOG & BOOT TRIGGER
+// ==========================================
+window.addEventListener('error', (event) => {
+  console.error('[AURA Global Error Watchdog]', event.error || event.message);
+  setTimeout(forceDismissPreloader, 600);
+});
+
+// Dual ready trigger: executed once entire module and DOM references are declared
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', boot);
+} else {
+  boot();
 }
 
 

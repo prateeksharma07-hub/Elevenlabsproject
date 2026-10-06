@@ -12,6 +12,11 @@
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700;800&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="style.css">
+
+  <!-- Core Animation & Smooth Scroll Engines (Local Vendor Libraries) -->
+  <script src="./vendor/gsap.min.js"></script>
+  <script src="./vendor/ScrollTrigger.min.js"></script>
+  <script src="./vendor/lenis.min.js"></script>
 </head>
 <body>
 
@@ -65,6 +70,25 @@
       </button>
     </div>
   </div>
+
+  <!-- Preloader Fail-Safe Watchdog: Guarantees preloader dismissal under all network & runtime conditions -->
+  <script>
+    (function() {
+      const preloader = document.getElementById('app-preloader');
+      const skipBtn = document.getElementById('preloader-skip-btn');
+      function dismiss() {
+        if (preloader && !preloader.classList.contains('loaded')) {
+          preloader.classList.add('loaded');
+          setTimeout(function() { preloader.style.display = 'none'; }, 400);
+        }
+      }
+      if (skipBtn) {
+        skipBtn.addEventListener('click', dismiss);
+      }
+      // Absolute safety timeout: guarantees dismissal within 2.2 seconds
+      setTimeout(dismiss, 2200);
+    })();
+  </script>
 
   <!-- Custom Cursor -->
   <div class="cursor-dot" id="cursor-dot"></div>
@@ -186,510 +210,598 @@
     </div>
   </header>
 
-  <!-- Main Content -->
+  <!-- Main Content: Immersive 3D Scroll Stage -->
   <main class="app-main">
+    <div class="immersive-scroll" id="immersive-scroll">
+      <div class="immersive-stage" id="immersive-stage">
 
-    <!-- Hero -->
-    <section class="hero reveal-on-scroll">
-      <div class="hero-badge">
-        <span class="pulse-dot"></span>
-        Zero-Latency Neural Speech Synthesis
-      </div>
-      <h2 class="hero-title">
-        Turn Written Words into<br>
-        <span class="gradient-text">Cinematic Human Voices</span>
-      </h2>
-      <p class="hero-subtitle">
-        Powered by ElevenLabs state-of-the-art acoustic AI. Experience emotional depth, lifelike intonation, and real-time audio analysis.
-      </p>
-    </section>
-
-    <!-- Section 01 Tag -->
-    <div class="section-tag-row reveal-on-scroll">
-      <span class="section-tag-badge">
-        <span class="tag-number">01</span>
-        <span class="tag-text">VOICE SYNTHESIS & ACOUSTICS STUDIO</span>
-      </span>
-    </div>
-
-    <!-- Main Card -->
-    <div class="main-card-wrapper reveal-on-scroll">
-      <div class="card-glow"></div>
-      <div class="main-card" id="main-card">
-
-        <!-- Voice & Model Selectors -->
-        <div class="controls-grid">
-          <!-- Voice -->
-          <div>
-            <div class="section-label">
-              <span class="label-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-                Voice Persona
-              </span>
-              <span id="voice-tag" class="label-tag cyan">Cinematic</span>
-            </div>
-            <div class="select-wrapper">
-              <select id="voice-select" class="custom-select">
-                <option value="pNInz6obpgDQGcFmaJgB" data-desc="Deep, authoritative & cinematic narrator" data-tag="Cinematic" selected>Adam — Deep Cinematic Narrator</option>
-                <option value="EXAVITQu4vr4xnSDxMaL" data-desc="Mature, reassuring & articulate" data-tag="Confident">Sarah — Mature & Confident</option>
-                <option value="JBFqnCBsd6RMkjVDRZzb" data-desc="Warm, immersive narrative storytelling" data-tag="Storyteller">George — Warm Storyteller</option>
-                <option value="nPczCjzI2devNBz1zQrb" data-desc="Deep, resonant, comforting low tones" data-tag="Resonant">Brian — Deep & Comforting</option>
-                <option value="Xb7hH8MSUJpSbSDYk0k2" data-desc="Clear, crisp & engaging educator" data-tag="Educator">Alice — Engaging Educator</option>
-                <option value="onwK4e9ZLuTAKqWW03F9" data-desc="Crisp, steady broadcaster" data-tag="Broadcast">Daniel — Steady Broadcaster</option>
-                <option value="cgSgspJ2msm6clMCkdW9" data-desc="Playful, upbeat & bright" data-tag="Conversational">Jessica — Playful & Warm</option>
-                <option value="SOYHLrjzK2X1ezoPC6cr" data-desc="Intense, fierce warrior energy" data-tag="Dramatic">Harry — Fierce Warrior</option>
-                <option value="IKne3meq5aSn9XLyUdCD" data-desc="Deep, energetic, confident young male" data-tag="Dynamic">Charlie — Deep & Confident</option>
-                <option value="pFZP5JQG7iQjIQuC4Bku" data-desc="Velvety, emotive theatrical voice" data-tag="Expressive">Lily — Velvety Actress</option>
-              </select>
-              <div class="select-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 9l-7 7-7-7"/></svg></div>
-            </div>
-            <p id="voice-description" class="select-desc">Deep, authoritative & cinematic narrator.</p>
+        <!-- ==========================================
+             SCENE 01: INTRODUCTION / HERO GATEWAY
+             ========================================== -->
+        <div class="scene scene-01 active" id="scene-01" data-scene="1">
+          <div class="scene-layer background-layer">
+            <div class="scene-halo cyan-halo"></div>
+            <div class="spatial-grid-plane"></div>
           </div>
-          <!-- Model -->
-          <div>
-            <div class="section-label">
-              <span class="label-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent-purple)" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
-                AI Model Engine
-              </span>
-              <span id="model-tier-badge" class="label-tag purple">Highest Fidelity</span>
-            </div>
-            <div class="select-wrapper">
-              <select id="model-select" class="custom-select purple-focus">
-                <option value="eleven_multilingual_v2" data-badge="Highest Fidelity" data-desc="29 languages, rich emotional range" selected>Eleven Multilingual v2</option>
-                <option value="eleven_turbo_v2_5" data-badge="Ultra Low Latency" data-desc="Fastest with 32 languages">Eleven Turbo v2.5</option>
-                <option value="eleven_turbo_v2" data-badge="High Speed" data-desc="Optimized for real-time flow">Eleven Turbo v2</option>
-                <option value="eleven_monolingual_v1" data-badge="Legacy English" data-desc="Original English engine">Eleven Monolingual v1</option>
-                <option value="eleven_flash_v2_5" data-badge="Ultra Fast" data-desc="Sub-100ms latency for live">Eleven Flash v2.5</option>
-              </select>
-              <div class="select-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 9l-7 7-7-7"/></svg></div>
-            </div>
-            <p id="model-description" class="select-desc">29 languages, rich emotional dynamic range.</p>
+          <div class="scene-layer midground-layer">
+            <div class="spatial-bracket left">[ ELEVENLABS AI PIPELINE ]</div>
+            <div class="spatial-bracket right">[ ZERO-LATENCY ACOUSTICS ]</div>
           </div>
-        </div>
-
-        <!-- Demo Script Chips -->
-        <div class="section-label">
-          <span class="label-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent-indigo)" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-            Demo Scripts
-          </span>
-          <button id="clear-text-btn" style="background:none;border:none;color:var(--text-muted);font-size:11px;cursor:pointer;display:flex;align-items:center;gap:4px;font-weight:600;transition:color 0.2s;" onmouseover="this.style.color='var(--accent-rose)'" onmouseout="this.style.color='var(--text-muted)'">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-            Clear
-          </button>
-        </div>
-        <div class="chips-row">
-          <button class="chip sample-chip" data-script="trailer">🎬 Movie Trailer</button>
-          <button class="chip sample-chip" data-script="ai">🤖 Sentient AI</button>
-          <button class="chip sample-chip" data-script="keynote">🚀 Tech Keynote</button>
-          <button class="chip sample-chip" data-script="asmr">🌿 Meditation</button>
-        </div>
-
-        <!-- Textarea -->
-        <div class="textarea-stats">
-          <div class="section-label" style="margin-bottom:0;">
-            <span class="label-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-              Speech Text
-            </span>
-          </div>
-          <div class="stats-right">
-            <span id="word-count">0 words</span>
-            <span style="color:var(--text-muted);">|</span>
-            <span id="char-count" class="char-count">0</span>
-            <span>/ 5,000</span>
-          </div>
-        </div>
-        <div class="textarea-glow-wrap">
-          <textarea id="text-input" class="main-textarea" rows="6" placeholder="Paste or write the text you want to synthesize... Try a demo script above!"></textarea>
-        </div>
-
-        <!-- Acoustic Sliders -->
-        <div class="accordion">
-          <button class="accordion-trigger" id="accordion-toggle" type="button">
-            <span class="trigger-left">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
-              Fine-Tune Acoustics
-            </span>
-            <span class="trigger-right">
-              <span class="pro-tag">Pro Settings</span>
-              <svg id="accordion-icon" class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 9l-7 7-7-7"/></svg>
-            </span>
-          </button>
-          <div id="accordion-content" class="accordion-body">
-            <div class="slider-group">
-              <div class="slider-header">
-                <span class="slider-label">Stability</span>
-                <span id="stability-val" class="slider-value" style="color:var(--accent-cyan);">0.50</span>
+          <div class="scene-layer content-layer">
+            <section class="hero">
+              <div class="hero-badge">
+                <span class="pulse-dot"></span>
+                Zero-Latency Neural Speech Synthesis
               </div>
-              <input id="stability-slider" type="range" min="0" max="1" step="0.05" value="0.50">
-              <div class="slider-footer"><span>Variable</span><span>Stable</span></div>
-            </div>
-            <div class="slider-group">
-              <div class="slider-header">
-                <span class="slider-label">Clarity & Similarity</span>
-                <span id="similarity-val" class="slider-value" style="color:var(--accent-purple);">0.75</span>
+              <h2 class="hero-title">
+                Turn Written Words into<br>
+                <span class="gradient-text">Cinematic Human Voices</span>
+              </h2>
+              <p class="hero-subtitle">
+                Powered by ElevenLabs state-of-the-art acoustic AI. Experience emotional depth, lifelike intonation, and real-time audio analysis.
+              </p>
+              <div class="hero-scroll-hint" id="hero-scroll-hint">
+                <span class="mouse-icon"><span class="mouse-wheel"></span></span>
+                <span>Scroll to enter 3D Neural Studio</span>
               </div>
-              <input id="similarity-slider" type="range" min="0" max="1" step="0.05" value="0.75">
-              <div class="slider-footer"><span>Low</span><span>High</span></div>
-            </div>
-            <div class="slider-group">
-              <div class="slider-header">
-                <span class="slider-label">Style Exaggeration</span>
-                <span id="style-val" class="slider-value" style="color:var(--accent-pink);">0.00</span>
-              </div>
-              <input id="style-slider" type="range" min="0" max="1" step="0.05" value="0.00">
-              <div class="slider-footer"><span>Natural</span><span>Dramatic</span></div>
-            </div>
+            </section>
           </div>
         </div>
 
-        <!-- Generate Button -->
-        <div class="generate-btn-wrap">
-          <button id="play-button" class="generate-btn" type="button">
-            <span class="generate-btn-face">
-              <span id="btn-icon-idle" class="btn-play-icon">
-                <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+        <!-- ==========================================
+             SCENE 02: VOICE SYNTHESIS & ACOUSTICS STUDIO
+             ========================================== -->
+        <div class="scene scene-02" id="scene-02" data-scene="2">
+          <div class="scene-layer background-layer">
+            <div class="scene-halo purple-halo"></div>
+          </div>
+          <div class="scene-layer content-layer">
+            <div class="section-tag-row">
+              <span class="section-tag-badge">
+                <span class="tag-number">01</span>
+                <span class="tag-text">VOICE SYNTHESIS & ACOUSTICS STUDIO</span>
               </span>
-              <span id="btn-icon-loading" class="hidden">
-                <svg class="spinner" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="3"><circle cx="12" cy="12" r="10" opacity="0.2"/><path d="M4 12a8 8 0 018-8" stroke-linecap="round"/></svg>
-              </span>
-              <span id="btn-icon-playing" class="eq-bars hidden">
-                <span class="eq-bar" style="--dur:0.5s;--delay:0s;background:var(--accent-cyan);"></span>
-                <span class="eq-bar" style="--dur:0.35s;--delay:0.1s;background:var(--accent-indigo);"></span>
-                <span class="eq-bar" style="--dur:0.6s;--delay:0.2s;background:var(--accent-purple);"></span>
-                <span class="eq-bar" style="--dur:0.45s;--delay:0.05s;background:var(--accent-pink);"></span>
-              </span>
-              <span id="btn-label" class="btn-text">Generate & Play</span>
-              <span class="btn-shortcut">Ctrl+Enter</span>
-            </span>
-          </button>
-          <button id="stop-button" class="stop-btn" type="button">
-            <svg viewBox="0 0 24 24" fill="var(--accent-rose)"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
-            Stop
-          </button>
-        </div>
-
-        <!-- Player Dock -->
-        <div class="player-dock" id="player-dock">
-          <div class="player-top">
-            <div class="player-status">
-              <div id="playback-status-dot" class="status-dot"></div>
-              <span id="playback-status-text" class="status-text">Audio Engine Standby</span>
             </div>
-            <div class="player-actions">
-              <button id="replay-btn" class="player-action-btn" disabled title="Replay">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-              </button>
-              <button id="download-btn" class="player-action-btn" disabled title="Download MP3">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                <span>MP3</span>
-              </button>
-            </div>
-          </div>
 
-          <div class="canvas-wrap">
-            <canvas id="visualizer-canvas"></canvas>
-            <div id="canvas-idle-hint" class="canvas-idle">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h5l2-6 4 12 3-6h6"/></svg>
-              Neural Waveform Ready
-            </div>
-          </div>
+            <!-- Main Card -->
+            <div class="main-card-wrapper">
+              <div class="card-glow"></div>
+              <div class="main-card" id="main-card">
 
-          <div class="timeline-track" id="timeline-track">
-            <div id="timeline-progress" class="timeline-progress">
-              <span class="timeline-thumb"></span>
-            </div>
-          </div>
-          <div class="time-row">
-            <div><span id="time-current">0:00</span> <span style="color:var(--text-muted);margin:0 4px;">/</span> <span id="time-total">0:00</span></div>
-            <div class="volume-controls">
-              <button id="volume-mute-btn" class="volume-btn">
-                <svg id="volume-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
-              </button>
-              <input id="volume-slider" class="volume-slider" type="range" min="0" max="1" step="0.05" value="1">
-            </div>
-          </div>
-        </div>
+                <!-- Voice & Model Selectors -->
+                <div class="controls-grid">
+                  <!-- Voice -->
+                  <div>
+                    <div class="section-label">
+                      <span class="label-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                        Voice Persona
+                      </span>
+                      <span id="voice-tag" class="label-tag cyan">Cinematic</span>
+                    </div>
+                    <div class="select-wrapper">
+                      <select id="voice-select" class="custom-select">
+                        <option value="pNInz6obpgDQGcFmaJgB" data-desc="Deep, authoritative & cinematic narrator" data-tag="Cinematic" selected>Adam — Deep Cinematic Narrator</option>
+                        <option value="EXAVITQu4vr4xnSDxMaL" data-desc="Mature, reassuring & articulate" data-tag="Confident">Sarah — Mature & Confident</option>
+                        <option value="JBFqnCBsd6RMkjVDRZzb" data-desc="Warm, immersive narrative storytelling" data-tag="Storyteller">George — Warm Storyteller</option>
+                        <option value="nPczCjzI2devNBz1zQrb" data-desc="Deep, resonant, comforting low tones" data-tag="Resonant">Brian — Deep & Comforting</option>
+                        <option value="Xb7hH8MSUJpSbSDYk0k2" data-desc="Clear, crisp & engaging educator" data-tag="Educator">Alice — Engaging Educator</option>
+                        <option value="onwK4e9ZLuTAKqWW03F9" data-desc="Crisp, steady broadcaster" data-tag="Broadcast">Daniel — Steady Broadcaster</option>
+                        <option value="cgSgspJ2msm6clMCkdW9" data-desc="Playful, upbeat & bright" data-tag="Conversational">Jessica — Playful & Warm</option>
+                        <option value="SOYHLrjzK2X1ezoPC6cr" data-desc="Intense, fierce warrior energy" data-tag="Dramatic">Harry — Fierce Warrior</option>
+                        <option value="IKne3meq5aSn9XLyUdCD" data-desc="Deep, energetic, confident young male" data-tag="Dynamic">Charlie — Deep & Confident</option>
+                        <option value="pFZP5JQG7iQjIQuC4Bku" data-desc="Velvety, emotive theatrical voice" data-tag="Expressive">Lily — Velvety Actress</option>
+                      </select>
+                      <div class="select-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 9l-7 7-7-7"/></svg></div>
+                    </div>
+                    <p id="voice-description" class="select-desc">Deep, authoritative & cinematic narrator.</p>
+                  </div>
+                  <!-- Model -->
+                  <div>
+                    <div class="section-label">
+                      <span class="label-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent-purple)" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+                        AI Model Engine
+                      </span>
+                      <span id="model-tier-badge" class="label-tag purple">Highest Fidelity</span>
+                    </div>
+                    <div class="select-wrapper">
+                      <select id="model-select" class="custom-select purple-focus">
+                        <option value="eleven_multilingual_v2" data-badge="Highest Fidelity" data-desc="29 languages, rich emotional range" selected>Eleven Multilingual v2</option>
+                        <option value="eleven_turbo_v2_5" data-badge="Ultra Low Latency" data-desc="Fastest with 32 languages">Eleven Turbo v2.5</option>
+                        <option value="eleven_turbo_v2" data-badge="High Speed" data-desc="Optimized for real-time flow">Eleven Turbo v2</option>
+                        <option value="eleven_monolingual_v1" data-badge="Legacy English" data-desc="Original English engine">Eleven Monolingual v1</option>
+                        <option value="eleven_flash_v2_5" data-badge="Ultra Fast" data-desc="Sub-100ms latency for live">Eleven Flash v2.5</option>
+                      </select>
+                      <div class="select-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 9l-7 7-7-7"/></svg></div>
+                    </div>
+                    <p id="model-description" class="select-desc">29 languages, rich emotional dynamic range.</p>
+                  </div>
+                </div>
 
-      </div>
-    </div>
+                <!-- Demo Script Chips -->
+                <div class="section-label">
+                  <span class="label-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent-indigo)" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    Demo Scripts
+                  </span>
+                  <button id="clear-text-btn" style="background:none;border:none;color:var(--text-muted);font-size:11px;cursor:pointer;display:flex;align-items:center;gap:4px;font-weight:600;transition:color 0.2s;" onmouseover="this.style.color='var(--accent-rose)'" onmouseout="this.style.color='var(--text-muted)'">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    Clear
+                  </button>
+                </div>
+                <div class="chips-row">
+                  <button class="chip sample-chip" data-script="trailer">🎬 Movie Trailer</button>
+                  <button class="chip sample-chip" data-script="ai">🤖 Sentient AI</button>
+                  <button class="chip sample-chip" data-script="keynote">🚀 Tech Keynote</button>
+                  <button class="chip sample-chip" data-script="asmr">🌿 Meditation</button>
+                </div>
 
-    <!-- Section Divider 01 -> 02 -->
-    <div class="section-divider reveal-on-scroll">
-      <div class="divider-line"></div>
-      <div class="divider-badge">
-        <span class="divider-dot"></span>
-        <span>02 // POLYGLOT TRANSLATION & DUBBING</span>
-      </div>
-      <div class="divider-line"></div>
-    </div>
+                <!-- Textarea -->
+                <div class="textarea-stats">
+                  <div class="section-label" style="margin-bottom:0;">
+                    <span class="label-icon">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                      Speech Text
+                    </span>
+                  </div>
+                  <div class="stats-right">
+                    <span id="word-count">0 words</span>
+                    <span style="color:var(--text-muted);">|</span>
+                    <span id="char-count" class="char-count">0</span>
+                    <span>/ 5,000</span>
+                  </div>
+                </div>
+                <div class="textarea-glow-wrap">
+                  <textarea id="text-input" class="main-textarea" rows="5" placeholder="Paste or write the text you want to synthesize... Try a demo script above!"></textarea>
+                </div>
 
-    <!-- ElevenLabs Translate in Other Languages Section -->
-    <div class="translate-section-wrapper reveal-on-scroll" id="translate-section">
-      <div class="card-glow" style="background: radial-gradient(ellipse at center, rgba(168, 85, 247, 0.18) 0%, rgba(34, 211, 238, 0.08) 50%, transparent 80%);"></div>
-      <div class="translate-card" id="translate-card">
-        
-        <!-- Header -->
-        <div class="translate-header">
-          <div class="translate-title-wrap">
-            <div class="translate-badge">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-              <span>ElevenLabs Neural Polyglot</span>
-            </div>
-            <h3 class="translate-title">
-              Instant AI Speech Translation & Multilingual Dubbing
-            </h3>
-            <p class="translate-desc">
-              Translate your text into 29+ global languages and synthesize speech with native accent nuances using <strong>Eleven Multilingual v2</strong>.
-            </p>
-          </div>
-          <div class="translate-meta">
-            <span class="polyglot-tag">
-              <span class="pulse-dot"></span>
-              29 Languages Supported
-            </span>
-          </div>
-        </div>
+                <!-- Acoustic Sliders -->
+                <div class="accordion">
+                  <button class="accordion-trigger" id="accordion-toggle" type="button">
+                    <span class="trigger-left">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+                      Fine-Tune Acoustics
+                    </span>
+                    <span class="trigger-right">
+                      <span class="pro-tag">Pro Settings</span>
+                      <svg id="accordion-icon" class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 9l-7 7-7-7"/></svg>
+                    </span>
+                  </button>
+                  <div id="accordion-content" class="accordion-body">
+                    <div class="slider-group">
+                      <div class="slider-header">
+                        <span class="slider-label">Stability</span>
+                        <span id="stability-val" class="slider-value" style="color:var(--accent-cyan);">0.50</span>
+                      </div>
+                      <input id="stability-slider" type="range" min="0" max="1" step="0.05" value="0.50">
+                      <div class="slider-footer"><span>Variable</span><span>Stable</span></div>
+                    </div>
+                    <div class="slider-group">
+                      <div class="slider-header">
+                        <span class="slider-label">Clarity & Similarity</span>
+                        <span id="similarity-val" class="slider-value" style="color:var(--accent-purple);">0.75</span>
+                      </div>
+                      <input id="similarity-slider" type="range" min="0" max="1" step="0.05" value="0.75">
+                      <div class="slider-footer"><span>Low</span><span>High</span></div>
+                    </div>
+                    <div class="slider-group">
+                      <div class="slider-header">
+                        <span class="slider-label">Style Exaggeration</span>
+                        <span id="style-val" class="slider-value" style="color:var(--accent-pink);">0.00</span>
+                      </div>
+                      <input id="style-slider" type="range" min="0" max="1" step="0.05" value="0.00">
+                      <div class="slider-footer"><span>Natural</span><span>Dramatic</span></div>
+                    </div>
+                  </div>
+                </div>
 
-        <!-- Quick Language Pills & Select -->
-        <div class="translate-controls-bar">
-          <div class="lang-pills-scroll" id="lang-pills-container">
-            <button type="button" class="lang-pill active" data-lang="es" data-lang-name="Spanish (Español)">🇪🇸 Spanish</button>
-            <button type="button" class="lang-pill" data-lang="fr" data-lang-name="French (Français)">🇫🇷 French</button>
-            <button type="button" class="lang-pill" data-lang="de" data-lang-name="German (Deutsch)">🇩🇪 German</button>
-            <button type="button" class="lang-pill" data-lang="ja" data-lang-name="Japanese (日本語)">🇯🇵 Japanese</button>
-            <button type="button" class="lang-pill" data-lang="hi" data-lang-name="Hindi (हिन्दी)">🇮🇳 Hindi</button>
-            <button type="button" class="lang-pill" data-lang="it" data-lang-name="Italian (Italiano)">🇮🇹 Italian</button>
-            <button type="button" class="lang-pill" data-lang="pt" data-lang-name="Portuguese (Português)">🇧🇷 Portuguese</button>
-            <button type="button" class="lang-pill" data-lang="zh" data-lang-name="Chinese (中文)">🇨🇳 Chinese</button>
-            <button type="button" class="lang-pill" data-lang="ko" data-lang-name="Korean (한국어)">🇰🇷 Korean</button>
-            <button type="button" class="lang-pill" data-lang="ar" data-lang-name="Arabic (العربية)">🇸🇦 Arabic</button>
-            <button type="button" class="lang-pill" data-lang="ru" data-lang-name="Russian (Русский)">🇷🇺 Russian</button>
-            <button type="button" class="lang-pill" data-lang="nl" data-lang-name="Dutch (Nederlands)">🇳🇱 Dutch</button>
-          </div>
-          <div class="select-wrapper translate-select-wrapper">
-            <select id="more-lang-select" class="custom-select custom-select-sm">
-              <option value="es" selected>🇪🇸 Spanish (Español)</option>
-              <option value="fr">🇫🇷 French (Français)</option>
-              <option value="de">🇩🇪 German (Deutsch)</option>
-              <option value="ja">🇯🇵 Japanese (日本語)</option>
-              <option value="hi">🇮🇳 Hindi (हिन्दी)</option>
-              <option value="it">🇮🇹 Italian (Italiano)</option>
-              <option value="pt">🇧🇷 Portuguese (Português)</option>
-              <option value="zh">🇨🇳 Chinese Mandarin (中文)</option>
-              <option value="ko">🇰🇷 Korean (한국어)</option>
-              <option value="ar">🇸🇦 Arabic (العربية)</option>
-              <option value="ru">🇷🇺 Russian (Русский)</option>
-              <option value="nl">🇳🇱 Dutch (Nederlands)</option>
-              <option value="tr">🇹🇷 Turkish (Türkçe)</option>
-              <option value="pl">🇵🇱 Polish (Polski)</option>
-              <option value="sv">🇸🇪 Swedish (Svenska)</option>
-              <option value="id">🇮🇩 Indonesian (Bahasa)</option>
-              <option value="vi">🇻🇳 Vietnamese (Tiếng Việt)</option>
-              <option value="el">🇬🇷 Greek (Ελληνικά)</option>
-              <option value="cs">🇨🇿 Czech (Čeština)</option>
-              <option value="fi">🇫🇮 Finnish (Suomi)</option>
-              <option value="ro">🇷🇴 Romanian (Română)</option>
-              <option value="da">🇩🇰 Danish (Dansk)</option>
-              <option value="bg">🇧🇬 Bulgarian (Български)</option>
-              <option value="ms">🇲🇾 Malay (Bahasa Melayu)</option>
-              <option value="hu">🇭🇺 Hungarian (Magyar)</option>
-              <option value="no">🇳🇴 Norwegian (Norsk)</option>
-              <option value="sk">🇸🇰 Slovak (Slovenčina)</option>
-              <option value="hr">🇭🇷 Croatian (Hrvatski)</option>
-              <option value="uk">🇺🇦 Ukrainian (Українська)</option>
-              <option value="ta">🇮🇳 Tamil (தமிழ்)</option>
-            </select>
-            <div class="select-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 9l-7 7-7-7"/></svg></div>
-          </div>
-        </div>
+                <!-- Generate Button -->
+                <div class="generate-btn-wrap">
+                  <button id="play-button" class="generate-btn" type="button">
+                    <span class="generate-btn-face">
+                      <span id="btn-icon-idle" class="btn-play-icon">
+                        <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                      </span>
+                      <span id="btn-icon-loading" class="hidden">
+                        <svg class="spinner" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="3"><circle cx="12" cy="12" r="10" opacity="0.2"/><path d="M4 12a8 8 0 018-8" stroke-linecap="round"/></svg>
+                      </span>
+                      <span id="btn-icon-playing" class="eq-bars hidden">
+                        <span class="eq-bar" style="--dur:0.5s;--delay:0s;background:var(--accent-cyan);"></span>
+                        <span class="eq-bar" style="--dur:0.35s;--delay:0.1s;background:var(--accent-indigo);"></span>
+                        <span class="eq-bar" style="--dur:0.6s;--delay:0.2s;background:var(--accent-purple);"></span>
+                        <span class="eq-bar" style="--dur:0.45s;--delay:0.05s;background:var(--accent-pink);"></span>
+                      </span>
+                      <span id="btn-label" class="btn-text">Generate & Play</span>
+                      <span class="btn-shortcut">Ctrl+Enter</span>
+                    </span>
+                  </button>
+                  <button id="stop-button" class="stop-btn" type="button">
+                    <svg viewBox="0 0 24 24" fill="var(--accent-rose)"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+                    Stop
+                  </button>
+                </div>
 
-        <!-- Translation Grid -->
-        <div class="translate-grid">
-          <!-- Source Box -->
-          <div class="translate-box">
-            <div class="translate-box-header">
-              <span class="box-badge">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="box-badge-icon"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                Source Text (Input)
-              </span>
-              <button id="sync-source-btn" type="button" class="box-action-btn" title="Sync with main studio speech text">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
-                Sync Studio
-              </button>
-            </div>
-            <textarea id="translate-source-text" class="translate-textarea" rows="4" placeholder="Enter text in English or any language to translate..."></textarea>
-            
-            <div class="quick-phrase-row">
-              <span class="quick-phrase-label">Quick Presets:</span>
-              <button type="button" class="phrase-chip" data-phrase="trailer">🎬 Epic Trailer</button>
-              <button type="button" class="phrase-chip" data-phrase="greeting">✨ Greeting</button>
-              <button type="button" class="phrase-chip" data-phrase="ai">🤖 Sentient AI</button>
-              <button type="button" class="phrase-chip" data-phrase="keynote">🚀 Keynote</button>
-            </div>
-          </div>
-
-          <!-- Middle Action Button -->
-          <div class="translate-action-center">
-            <button id="do-translate-btn" class="translate-execute-btn" type="button">
-              <span class="translate-btn-inner">
-                <span id="translate-icon-idle">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-                </span>
-                <span id="translate-icon-loading" class="hidden">
-                  <svg class="spinner" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><circle cx="12" cy="12" r="10" opacity="0.2"/><path d="M4 12a8 8 0 018-8" stroke-linecap="round"/></svg>
-                </span>
-              </span>
-              <span id="translate-btn-label">Translate</span>
-            </button>
-          </div>
-
-          <!-- Target Box -->
-          <div class="translate-box highlight">
-            <div class="translate-box-header">
-              <span id="target-lang-badge" class="box-badge active">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="box-badge-icon"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-                🇪🇸 Spanish Translation
-              </span>
-              <div class="box-actions-group">
-                <button id="copy-translated-btn" type="button" class="box-action-btn" title="Copy translated text">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                  Copy
-                </button>
               </div>
             </div>
-            <textarea id="translate-target-text" class="translate-textarea target-textarea" rows="4" placeholder="Translated text will appear here..."></textarea>
-            
-            <div class="target-bottom-bar">
-              <div class="model-recommendation">
-                <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent-purple)" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
-                <span>Engine: <strong style="color:var(--accent-purple);">Eleven Multilingual v2</strong></span>
+          </div>
+        </div>
+
+        <!-- ==========================================
+             SCENE 03: AUDIO VISUALIZER & SPECTRUM ARENA
+             ========================================== -->
+        <div class="scene scene-03" id="scene-03" data-scene="3">
+          <div class="scene-layer background-layer">
+            <div class="scene-halo visualizer-halo"></div>
+            <div class="acoustic-rings-wrap">
+              <div class="acoustic-ring ring-1"></div>
+              <div class="acoustic-ring ring-2"></div>
+              <div class="acoustic-ring ring-3"></div>
+            </div>
+          </div>
+          <div class="scene-layer content-layer">
+            <div class="section-tag-row">
+              <span class="section-tag-badge cyan">
+                <span class="tag-number">02</span>
+                <span class="tag-text">REAL-TIME WAVEFORM & FREQUENCY ARENA</span>
+              </span>
+            </div>
+
+            <div class="visualizer-arena-card" id="visualizer-arena">
+              <div class="card-glow" style="background: radial-gradient(ellipse at center, rgba(34, 211, 238, 0.2) 0%, rgba(168, 85, 247, 0.1) 50%, transparent 80%);"></div>
+
+              <!-- Existing Player Dock DOM & IDs -->
+              <div class="player-dock" id="player-dock">
+                <div class="player-top">
+                  <div class="player-status">
+                    <div id="playback-status-dot" class="status-dot"></div>
+                    <span id="playback-status-text" class="status-text">Audio Engine Standby</span>
+                  </div>
+                  <div class="player-actions">
+                    <button id="replay-btn" class="player-action-btn" disabled title="Replay">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                    </button>
+                    <button id="download-btn" class="player-action-btn" disabled title="Download MP3">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                      <span>MP3</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="canvas-wrap">
+                  <canvas id="visualizer-canvas"></canvas>
+                  <div id="canvas-idle-hint" class="canvas-idle">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h5l2-6 4 12 3-6h6"/></svg>
+                    Neural Waveform Ready
+                  </div>
+                </div>
+
+                <div class="timeline-track" id="timeline-track">
+                  <div id="timeline-progress" class="timeline-progress">
+                    <span class="timeline-thumb"></span>
+                  </div>
+                </div>
+                <div class="time-row">
+                  <div><span id="time-current">0:00</span> <span style="color:var(--text-muted);margin:0 4px;">/</span> <span id="time-total">0:00</span></div>
+                  <div class="volume-controls">
+                    <button id="volume-mute-btn" class="volume-btn">
+                      <svg id="volume-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+                    </button>
+                    <input id="volume-slider" class="volume-slider" type="range" min="0" max="1" step="0.05" value="1">
+                  </div>
+                </div>
               </div>
-              <button id="apply-to-studio-btn" class="apply-studio-btn" type="button">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-                Send to Studio & Synthesize
-              </button>
+
             </div>
           </div>
         </div>
 
-      </div>
-    </div>
+        <!-- ==========================================
+             SCENE 04: POLYGLOT TRANSLATION & DUBBING
+             ========================================== -->
+        <div class="scene scene-04" id="scene-04" data-scene="4">
+          <div class="scene-layer background-layer">
+            <div class="scene-halo polyglot-halo"></div>
+          </div>
+          <div class="scene-layer content-layer">
+            <div class="section-tag-row">
+              <span class="section-tag-badge">
+                <span class="tag-number">03</span>
+                <span class="tag-text">POLYGLOT TRANSLATION & DUBBING</span>
+              </span>
+            </div>
 
-    <!-- Section Divider 02 -> 03 -->
-    <div class="section-divider reveal-on-scroll">
-      <div class="divider-line"></div>
-      <div class="divider-badge purple">
-        <span class="divider-dot purple"></span>
-        <span>03 // BENCHMARKS & ARCHITECTURE</span>
-      </div>
-      <div class="divider-line"></div>
-    </div>
+            <!-- ElevenLabs Translate in Other Languages Section -->
+            <div class="translate-section-wrapper" id="translate-section">
+              <div class="card-glow" style="background: radial-gradient(ellipse at center, rgba(168, 85, 247, 0.18) 0%, rgba(34, 211, 238, 0.08) 50%, transparent 80%);"></div>
+              <div class="translate-card" id="translate-card">
+                
+                <!-- Header -->
+                <div class="translate-header">
+                  <div class="translate-title-wrap">
+                    <div class="translate-badge">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                      <span>ElevenLabs Neural Polyglot</span>
+                    </div>
+                    <h3 class="translate-title">
+                      Instant AI Speech Translation & Multilingual Dubbing
+                    </h3>
+                    <p class="translate-desc">
+                      Translate your text into 29+ global languages and synthesize speech with native accent nuances using <strong>Eleven Multilingual v2</strong>.
+                    </p>
+                  </div>
+                  <div class="translate-meta">
+                    <span class="polyglot-tag">
+                      <span class="pulse-dot"></span>
+                      29 Languages Supported
+                    </span>
+                  </div>
+                </div>
 
-    <!-- Feature Cards -->
-    <div class="features-grid reveal-on-scroll">
-      <div class="feature-card">
-        <div class="feature-value" style="color:var(--accent-cyan);">29+</div>
-        <div class="feature-label">Global Languages</div>
-      </div>
-      <div class="feature-card">
-        <div class="feature-value" style="color:var(--accent-indigo);">&lt; 150ms</div>
-        <div class="feature-label">Turbo Latency</div>
-      </div>
-      <div class="feature-card">
-        <div class="feature-value" style="color:var(--accent-purple);">Real-Time</div>
-        <div class="feature-label">Wave Analyser</div>
-      </div>
-      <div class="feature-card">
-        <div class="feature-value" style="color:var(--accent-pink);">Lossless</div>
-        <div class="feature-label">MP3 Export</div>
-      </div>
-    </div>
+                <!-- Quick Language Pills & Select -->
+                <div class="translate-controls-bar">
+                  <div class="lang-pills-scroll" id="lang-pills-container">
+                    <button type="button" class="lang-pill active" data-lang="es" data-lang-name="Spanish (Español)">🇪🇸 Spanish</button>
+                    <button type="button" class="lang-pill" data-lang="fr" data-lang-name="French (Français)">🇫🇷 French</button>
+                    <button type="button" class="lang-pill" data-lang="de" data-lang-name="German (Deutsch)">🇩🇪 German</button>
+                    <button type="button" class="lang-pill" data-lang="ja" data-lang-name="Japanese (日本語)">🇯🇵 Japanese</button>
+                    <button type="button" class="lang-pill" data-lang="hi" data-lang-name="Hindi (हिन्दी)">🇮🇳 Hindi</button>
+                    <button type="button" class="lang-pill" data-lang="it" data-lang-name="Italian (Italiano)">🇮🇹 Italian</button>
+                    <button type="button" class="lang-pill" data-lang="pt" data-lang-name="Portuguese (Português)">🇧🇷 Portuguese</button>
+                    <button type="button" class="lang-pill" data-lang="zh" data-lang-name="Chinese (中文)">🇨🇳 Chinese</button>
+                    <button type="button" class="lang-pill" data-lang="ko" data-lang-name="Korean (한국어)">🇰🇷 Korean</button>
+                    <button type="button" class="lang-pill" data-lang="ar" data-lang-name="Arabic (العربية)">🇸🇦 Arabic</button>
+                    <button type="button" class="lang-pill" data-lang="ru" data-lang-name="Russian (Русский)">🇷🇺 Russian</button>
+                    <button type="button" class="lang-pill" data-lang="nl" data-lang-name="Dutch (Nederlands)">🇳🇱 Dutch</button>
+                  </div>
+                  <div class="select-wrapper translate-select-wrapper">
+                    <select id="more-lang-select" class="custom-select custom-select-sm">
+                      <option value="es" selected>🇪🇸 Spanish (Español)</option>
+                      <option value="fr">🇫🇷 French (Français)</option>
+                      <option value="de">🇩🇪 German (Deutsch)</option>
+                      <option value="ja">🇯🇵 Japanese (日本語)</option>
+                      <option value="hi">🇮🇳 Hindi (हिन्दी)</option>
+                      <option value="it">🇮🇹 Italian (Italiano)</option>
+                      <option value="pt">🇧🇷 Portuguese (Português)</option>
+                      <option value="zh">🇨🇳 Chinese Mandarin (中文)</option>
+                      <option value="ko">🇰🇷 Korean (한국어)</option>
+                      <option value="ar">🇸🇦 Arabic (العربية)</option>
+                      <option value="ru">🇷🇺 Russian (Русский)</option>
+                      <option value="nl">🇳🇱 Dutch (Nederlands)</option>
+                      <option value="tr">🇹🇷 Turkish (Türkçe)</option>
+                      <option value="pl">🇵🇱 Polish (Polski)</option>
+                      <option value="sv">🇸🇪 Swedish (Svenska)</option>
+                      <option value="id">🇮🇩 Indonesian (Bahasa)</option>
+                      <option value="vi">🇻🇳 Vietnamese (Tiếng Việt)</option>
+                      <option value="el">🇬🇷 Greek (Ελληνικά)</option>
+                      <option value="cs">🇨🇿 Czech (Čeština)</option>
+                      <option value="fi">🇫🇮 Finnish (Suomi)</option>
+                      <option value="ro">🇷🇴 Romanian (Română)</option>
+                      <option value="da">🇩🇰 Danish (Dansk)</option>
+                      <option value="bg">🇧🇬 Bulgarian (Български)</option>
+                      <option value="ms">🇲🇾 Malay (Bahasa Melayu)</option>
+                      <option value="hu">🇭🇺 Hungarian (Magyar)</option>
+                      <option value="no">🇳🇴 Norwegian (Norsk)</option>
+                      <option value="sk">🇸🇰 Slovak (Slovenčina)</option>
+                      <option value="hr">🇭🇷 Croatian (Hrvatski)</option>
+                      <option value="uk">🇺🇦 Ukrainian (Українська)</option>
+                      <option value="ta">🇮🇳 Tamil (தமிழ்)</option>
+                    </select>
+                    <div class="select-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 9l-7 7-7-7"/></svg></div>
+                  </div>
+                </div>
 
-    <!-- Transition Cascade to Footer -->
-    <div class="section-transition-cascade reveal-on-scroll">
-      <div class="transition-beam"></div>
-    </div>
+                <!-- Translation Grid -->
+                <div class="translate-grid">
+                  <!-- Source Box -->
+                  <div class="translate-box">
+                    <div class="translate-box-header">
+                      <span class="box-badge">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="box-badge-icon"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                        Source Text (Input)
+                      </span>
+                      <button id="sync-source-btn" type="button" class="box-action-btn" title="Sync with main studio speech text">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                        Sync Studio
+                      </button>
+                    </div>
+                    <textarea id="translate-source-text" class="translate-textarea" rows="4" placeholder="Enter text in English or any language to translate..."></textarea>
+                    
+                    <div class="quick-phrase-row">
+                      <span class="quick-phrase-label">Quick Presets:</span>
+                      <button type="button" class="phrase-chip" data-phrase="trailer">🎬 Epic Trailer</button>
+                      <button type="button" class="phrase-chip" data-phrase="greeting">✨ Greeting</button>
+                      <button type="button" class="phrase-chip" data-phrase="ai">🤖 Sentient AI</button>
+                      <button type="button" class="phrase-chip" data-phrase="keynote">🚀 Keynote</button>
+                    </div>
+                  </div>
 
-    <!-- Sleek App Footer -->
-    <footer class="app-footer reveal-on-scroll">
-      
-      <!-- Studio Color Themes Section in Footer -->
-      <div class="footer-theme-card">
-        <div class="theme-card-header">
-          <span class="theme-icon-wrap">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 10 10c0 5.523-4.477 10-10 10a10 10 0 0 1-10-10c0-5.523 4.477-10 10-10z"/><circle cx="8" cy="10" r="1.5"/><circle cx="12" cy="7" r="1.5"/><circle cx="16" cy="10" r="1.5"/><circle cx="9" cy="15" r="1.5"/><circle cx="15" cy="15" r="1.5"/></svg>
-          </span>
-          <div class="theme-card-text">
-            <h4 class="theme-title">Studio Ambient Color Themes</h4>
-            <p class="theme-subtitle">Click to switch the neural studio's chromatic lighting and visualizer palette</p>
+                  <!-- Middle Action Button -->
+                  <div class="translate-action-center">
+                    <button id="do-translate-btn" class="translate-execute-btn" type="button">
+                      <span class="translate-btn-inner">
+                        <span id="translate-icon-idle">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                        </span>
+                        <span id="translate-icon-loading" class="hidden">
+                          <svg class="spinner" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><circle cx="12" cy="12" r="10" opacity="0.2"/><path d="M4 12a8 8 0 018-8" stroke-linecap="round"/></svg>
+                        </span>
+                      </span>
+                      <span id="translate-btn-label">Translate</span>
+                    </button>
+                  </div>
+
+                  <!-- Target Box -->
+                  <div class="translate-box highlight">
+                    <div class="translate-box-header">
+                      <span id="target-lang-badge" class="box-badge active">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="box-badge-icon"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                        🇪🇸 Spanish Translation
+                      </span>
+                      <div class="box-actions-group">
+                        <button id="copy-translated-btn" type="button" class="box-action-btn" title="Copy translated text">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                          Copy
+                        </button>
+                      </div>
+                    </div>
+                    <textarea id="translate-target-text" class="translate-textarea target-textarea" rows="4" placeholder="Translated text will appear here..."></textarea>
+                    
+                    <div class="target-bottom-bar">
+                      <div class="model-recommendation">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent-purple)" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+                        <span>Engine: <strong style="color:var(--accent-purple);">Eleven Multilingual v2</strong></span>
+                      </div>
+                      <button id="apply-to-studio-btn" class="apply-studio-btn" type="button">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                        Send to Studio & Synthesize
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
           </div>
         </div>
-        <div class="theme-chips-grid" id="theme-chips-grid">
-          <button type="button" class="theme-chip-btn" data-theme="cyan-purple">
-            <span class="theme-dot" style="background: linear-gradient(135deg, #22d3ee, #c084fc);"></span>
-            <span class="theme-name">Cyber Neon</span>
-            <span class="theme-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span>
-          </button>
-          <button type="button" class="theme-chip-btn" data-theme="emerald-matrix">
-            <span class="theme-dot" style="background: linear-gradient(135deg, #10b981, #06b6d4);"></span>
-            <span class="theme-name">Matrix Green</span>
-            <span class="theme-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span>
-          </button>
-          <button type="button" class="theme-chip-btn" data-theme="crimson-eclipse">
-            <span class="theme-dot" style="background: linear-gradient(135deg, #f43f5e, #fb7185);"></span>
-            <span class="theme-name">Crimson Dusk</span>
-            <span class="theme-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span>
-          </button>
-          <button type="button" class="theme-chip-btn active" data-theme="solar-gold">
-            <span class="theme-dot" style="background: linear-gradient(135deg, #f59e0b, #ec4899);"></span>
-            <span class="theme-name">Solar Flare</span>
-            <span class="theme-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span>
-          </button>
-          <button type="button" class="theme-chip-btn" data-theme="tokyo-synth">
-            <span class="theme-dot" style="background: linear-gradient(135deg, #ec4899, #8b5cf6);"></span>
-            <span class="theme-name">Synthwave</span>
-            <span class="theme-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span>
-          </button>
-        </div>
-      </div>
 
-      <div class="footer-inner">
-        <div class="footer-brand">
-          <div class="footer-brand-logo">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-              <path d="M2 10v4"/><path d="M6 6v12"/><path d="M10 3v18"/><path d="M14 7v10"/><path d="M18 5v14"/><path d="M22 10v4"/>
-            </svg>
-            <span>AURA<strong>.ai</strong></span>
+        <!-- ==========================================
+             SCENE 05: BENCHMARKS, THEMES & FINALE
+             ========================================== -->
+        <div class="scene scene-05" id="scene-05" data-scene="5">
+          <div class="scene-layer background-layer">
+            <div class="scene-halo finale-halo"></div>
           </div>
-          <p class="footer-tagline">Award-Winning AI Voice Synthesis powered by ElevenLabs Neural Models.</p>
-        </div>
+          <div class="scene-layer content-layer">
+            <div class="section-tag-row">
+              <span class="section-tag-badge purple">
+                <span class="tag-number">04</span>
+                <span class="tag-text">BENCHMARKS, THEMES & CINEMATIC FINALE</span>
+              </span>
+            </div>
 
-        <div class="footer-links">
-          <button type="button" class="footer-link-btn" data-target="main-card">Voice Studio</button>
-          <button type="button" class="footer-link-btn" data-target="translate-section">29+ Langs Translate</button>
-          <button type="button" class="footer-link-btn" data-target="player-dock">Wave Visualizer</button>
-          <button type="button" class="footer-link-btn" id="footer-guide-btn">Pro Demo Tips</button>
-        </div>
+            <!-- Feature Metrics Grid -->
+            <div class="features-grid">
+              <div class="feature-card">
+                <div class="feature-value" style="color:var(--accent-cyan);">29+</div>
+                <div class="feature-label">Global Languages</div>
+              </div>
+              <div class="feature-card">
+                <div class="feature-value" style="color:var(--accent-indigo);">&lt; 150ms</div>
+                <div class="feature-label">Turbo Latency</div>
+              </div>
+              <div class="feature-card">
+                <div class="feature-value" style="color:var(--accent-purple);">Real-Time</div>
+                <div class="feature-label">Wave Analyser</div>
+              </div>
+              <div class="feature-card">
+                <div class="feature-value" style="color:var(--accent-pink);">Lossless</div>
+                <div class="feature-label">MP3 Export</div>
+              </div>
+            </div>
 
-        <div class="footer-status-card">
-          <div class="footer-status-pill">
-            <span class="status-live-dot"></span>
-            <span>ElevenLabs Engine Connected</span>
+            <!-- Cinematic Finale Hero -->
+            <div class="finale-card">
+              <div class="card-glow" style="background: radial-gradient(ellipse at center, rgba(245, 158, 11, 0.15) 0%, rgba(249, 115, 22, 0.08) 50%, transparent 80%);"></div>
+              <div class="finale-content">
+                <div class="brand-icon-wrap" style="width:52px;height:52px;margin:0 auto 16px;">
+                  <div class="brand-icon-inner">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M2 10v4"/><path d="M6 6v12"/><path d="M10 3v18"/><path d="M14 7v10"/><path d="M18 5v14"/><path d="M22 10v4"/>
+                    </svg>
+                  </div>
+                </div>
+                <h3 class="finale-brand">AURA<span>.ai</span></h3>
+                <p class="finale-quote">“Turn written words into cinematic human voices.”</p>
+                <div class="finale-actions">
+                  <button type="button" class="finale-btn" id="finale-return-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>
+                    <span>Back to Voice Studio</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sleek App Footer -->
+            <footer class="app-footer">
+              <!-- Studio Color Themes Section in Footer -->
+              <div class="footer-theme-card">
+                <div class="theme-card-header">
+                  <span class="theme-icon-wrap">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 10 10c0 5.523-4.477 10-10 10a10 10 0 0 1-10-10c0-5.523 4.477-10 10-10z"/><circle cx="8" cy="10" r="1.5"/><circle cx="12" cy="7" r="1.5"/><circle cx="16" cy="10" r="1.5"/><circle cx="9" cy="15" r="1.5"/><circle cx="15" cy="15" r="1.5"/></svg>
+                  </span>
+                  <div class="theme-card-text">
+                    <h4 class="theme-title">Studio Ambient Color Themes</h4>
+                    <p class="theme-subtitle">Click to switch the neural studio's chromatic lighting and visualizer palette</p>
+                  </div>
+                </div>
+                <div class="theme-chips-grid" id="theme-chips-grid">
+                  <button type="button" class="theme-chip-btn" data-theme="cyan-purple">
+                    <span class="theme-dot" style="background: linear-gradient(135deg, #22d3ee, #c084fc);"></span>
+                    <span class="theme-name">Cyber Neon</span>
+                    <span class="theme-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span>
+                  </button>
+                  <button type="button" class="theme-chip-btn" data-theme="emerald-matrix">
+                    <span class="theme-dot" style="background: linear-gradient(135deg, #10b981, #06b6d4);"></span>
+                    <span class="theme-name">Matrix Green</span>
+                    <span class="theme-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span>
+                  </button>
+                  <button type="button" class="theme-chip-btn" data-theme="crimson-eclipse">
+                    <span class="theme-dot" style="background: linear-gradient(135deg, #f43f5e, #fb7185);"></span>
+                    <span class="theme-name">Crimson Dusk</span>
+                    <span class="theme-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span>
+                  </button>
+                  <button type="button" class="theme-chip-btn active" data-theme="solar-gold">
+                    <span class="theme-dot" style="background: linear-gradient(135deg, #f59e0b, #ec4899);"></span>
+                    <span class="theme-name">Solar Flare</span>
+                    <span class="theme-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span>
+                  </button>
+                  <button type="button" class="theme-chip-btn" data-theme="tokyo-synth">
+                    <span class="theme-dot" style="background: linear-gradient(135deg, #ec4899, #8b5cf6);"></span>
+                    <span class="theme-name">Synthwave</span>
+                    <span class="theme-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="footer-inner">
+                <div class="footer-brand">
+                  <div class="footer-brand-logo">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                      <path d="M2 10v4"/><path d="M6 6v12"/><path d="M10 3v18"/><path d="M14 7v10"/><path d="M18 5v14"/><path d="M22 10v4"/>
+                    </svg>
+                    <span>AURA<strong>.ai</strong></span>
+                  </div>
+                  <p class="footer-tagline">Award-Winning AI Voice Synthesis powered by ElevenLabs Neural Models.</p>
+                </div>
+
+                <div class="footer-links">
+                  <button type="button" class="footer-link-btn" data-target="main-card">Voice Studio</button>
+                  <button type="button" class="footer-link-btn" data-target="translate-section">29+ Langs Translate</button>
+                  <button type="button" class="footer-link-btn" data-target="player-dock">Wave Visualizer</button>
+                  <button type="button" class="footer-link-btn" id="footer-guide-btn">Pro Demo Tips</button>
+                </div>
+
+                <div class="footer-status-card">
+                  <div class="footer-status-pill">
+                    <span class="status-live-dot"></span>
+                    <span>ElevenLabs Engine Connected</span>
+                  </div>
+                  <span class="footer-shortcut-hint">Tip: Press <kbd>Ctrl</kbd> + <kbd>Enter</kbd> to synthesize</span>
+                </div>
+              </div>
+              <div class="footer-bottom">
+                <p>© 2026 AURA Neural Voice Studio. Built with HTML5, CSS3 & Modern JavaScript.</p>
+                <div class="footer-bottom-badge">
+                  <span>Zero-Latency Real-Time Audio Pipeline</span>
+                </div>
+              </div>
+            </footer>
           </div>
-          <span class="footer-shortcut-hint">Tip: Press <kbd>Ctrl</kbd> + <kbd>Enter</kbd> to synthesize</span>
         </div>
-      </div>
-      <div class="footer-bottom">
-        <p>© 2026 AURA Neural Voice Studio. Built with HTML5, CSS3 & Modern JavaScript.</p>
-        <div class="footer-bottom-badge">
-          <span>Zero-Latency Real-Time Audio Pipeline</span>
-        </div>
-      </div>
-    </footer>
 
+      </div>
+    </div>
   </main>
 
   <!-- Guide Modal -->
