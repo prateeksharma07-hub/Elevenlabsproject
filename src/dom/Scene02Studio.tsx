@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useStudio } from '../state/studioState';
 import { VOICES, MODELS } from '../services/elevenlabs';
-import { Play, Square, Sliders, Sparkles } from 'lucide-react';
+import { Play, Pause, Square, Sliders, Sparkles, Download, Volume2, RotateCcw } from 'lucide-react';
 
 export const Scene02Studio: React.FC = () => {
   const {
@@ -19,238 +19,378 @@ export const Scene02Studio: React.FC = () => {
     setStyle,
     isGenerating,
     loadDemoScript,
+    audioUrl,
     isPlaying,
+    currentTime,
+    duration,
+    volume,
+    setVolume,
+    togglePlayPause,
     stopAudio,
+    seekAudio,
+    downloadAudio,
     handleGenerate,
-    scrollProgress,
   } = useStudio();
 
-  const [showSliders, setShowSliders] = useState<boolean>(true);
+  const [showAcousticDrawer, setShowAcousticDrawer] = useState<boolean>(true);
 
-  // Opacity window around Scene 02 focal plane
-  let opacity = 0;
-  if (scrollProgress >= 0.22 && scrollProgress <= 0.48) {
-    opacity = 1;
-  } else if (scrollProgress > 0.14 && scrollProgress < 0.22) {
-    opacity = (scrollProgress - 0.14) / 0.08;
-  } else if (scrollProgress > 0.48 && scrollProgress < 0.56) {
-    opacity = 1 - (scrollProgress - 0.48) / 0.08;
-  }
-
-  const pointerEvents = opacity > 0.3 ? 'auto' : 'none';
-  const selectedVoice = VOICES.find((v) => v.id === voiceId);
-  const selectedModel = MODELS.find((m) => m.id === modelId);
+  const selectedVoice = VOICES.find((v) => v.id === voiceId) || VOICES[0];
+  const selectedModel = MODELS.find((m) => m.id === modelId) || MODELS[0];
 
   const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
   const charCount = text.length;
 
-  return (
-    <div
-      className="scene-overlay-stage"
-      style={{
-        opacity,
-        pointerEvents,
-        transition: 'opacity 0.1s linear',
-      }}
-    >
-      <div className="glass-console">
-        {/* Section Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '22px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--accent-cyan)', background: 'rgba(34, 211, 238, 0.1)', padding: '3px 8px', borderRadius: '4px' }}>
-              01
-            </span>
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-secondary)' }}>
-              Voice Synthesis & Studio Console
-            </span>
-          </div>
+  const formatTime = (secs: number) => {
+    const mins = Math.floor(secs / 60);
+    const remaining = Math.floor(secs % 60);
+    return `${mins}:${remaining < 10 ? '0' : ''}${remaining}`;
+  };
 
+  const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
+
+  // Determine current engine status label
+  const getEngineStatus = () => {
+    if (isGenerating) {
+      return { label: 'SYNTHESIZING NEURAL AUDIO...', state: 'generating' };
+    }
+    if (isPlaying) {
+      return { label: 'PLAYING ACOUSTIC STREAM', state: 'playing' };
+    }
+    if (audioUrl) {
+      return { label: 'AUDIO GENERATED — READY', state: 'ready' };
+    }
+    return { label: 'SYSTEM READY', state: 'idle' };
+  };
+
+  const status = getEngineStatus();
+
+  const resetAcoustics = () => {
+    setStability(0.50);
+    setSimilarity(0.75);
+    setStyle(0.00);
+  };
+
+  return (
+    <div className="studio-card-container">
+      {/* 1. Header Bar */}
+      <div className="studio-header">
+        <div className="studio-title-group">
+          <h2 className="studio-title">AURA STUDIO</h2>
+          <div className={`studio-status-pill ${status.state}`}>
+            <span className="status-dot" />
+            <span className="status-text">{status.label}</span>
+          </div>
+        </div>
+
+        {/* Quick Demo Presets */}
+        <div className="studio-presets">
+          <span className="presets-label">Presets:</span>
           <button
             type="button"
-            className="chip-btn"
-            style={{ padding: '4px 10px', fontSize: '11px' }}
-            onClick={() => setShowSliders(!showSliders)}
+            className="preset-pill"
+            onClick={() => loadDemoScript('trailer')}
           >
-            <Sliders size={12} />
-            <span>{showSliders ? 'Hide Acoustics' : 'Fine-Tune'}</span>
+            <Sparkles size={11} />
+            <span>Movie Trailer</span>
+          </button>
+          <button
+            type="button"
+            className="preset-pill"
+            onClick={() => loadDemoScript('ai')}
+          >
+            <Sparkles size={11} />
+            <span>Sentient AI</span>
+          </button>
+          <button
+            type="button"
+            className="preset-pill"
+            onClick={() => loadDemoScript('keynote')}
+          >
+            <Sparkles size={11} />
+            <span>Keynote</span>
+          </button>
+          <button
+            type="button"
+            className="preset-pill"
+            onClick={() => loadDemoScript('asmr')}
+          >
+            <Sparkles size={11} />
+            <span>ASMR</span>
           </button>
         </div>
+      </div>
 
-        {/* 1. Voice & Model Selectors */}
-        <div className="control-grid-2">
-          {/* Voice */}
-          <div>
-            <div className="field-label">
-              <span>Voice Persona</span>
-              <span className="field-tag">{selectedVoice?.tag}</span>
-            </div>
-            <div className="select-wrap">
-              <select
-                className="glass-select"
-                value={voiceId}
-                onChange={(e) => setVoiceId(e.target.value)}
-              >
-                {VOICES.map((v) => (
-                  <option key={v.id} value={v.id} style={{ background: '#090e17', color: '#fff' }}>
-                    {v.name} — {v.desc}
-                  </option>
-                ))}
-              </select>
-            </div>
+      {/* 2. Main Narration Textarea */}
+      <div className="studio-input-block">
+        <div className="input-block-header">
+          <span className="block-label">Narration Script</span>
+          <span className="shortcut-hint">Ctrl + Enter to synthesize</span>
+        </div>
+
+        <textarea
+          className="studio-textarea"
+          placeholder="Type or paste the words you want AURA to bring to life..."
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          onKeyDown={(e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+              e.preventDefault();
+              handleGenerate();
+            }
+          }}
+          rows={5}
+        />
+
+        <div className="input-block-footer">
+          <span className="count-stat">{wordCount} words</span>
+          <span className="count-stat">{charCount} characters</span>
+        </div>
+      </div>
+
+      {/* 3. Voice & Model Configuration */}
+      <div className="studio-controls-grid">
+        {/* Voice Persona */}
+        <div className="control-card">
+          <div className="control-header">
+            <label htmlFor="voice-select" className="control-label">Voice Persona</label>
+            <span className="control-badge">{selectedVoice.tag}</span>
           </div>
-
-          {/* Model */}
-          <div>
-            <div className="field-label">
-              <span>Model Engine</span>
-              <span className="field-tag" style={{ color: 'var(--accent-indigo)', borderColor: 'rgba(99, 102, 241, 0.3)', background: 'rgba(99, 102, 241, 0.1)' }}>
-                {selectedModel?.badge}
-              </span>
-            </div>
-            <div className="select-wrap">
-              <select
-                className="glass-select"
-                value={modelId}
-                onChange={(e) => setModelId(e.target.value)}
-              >
-                {MODELS.map((m) => (
-                  <option key={m.id} value={m.id} style={{ background: '#090e17', color: '#fff' }}>
-                    {m.name} — {m.desc}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-        </div>
-
-        {/* 2. Demo Script Chips */}
-        <div className="chips-tray">
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-muted)', marginRight: '4px' }}>
-            Presets:
-          </span>
-          <button type="button" className="chip-btn" onClick={() => loadDemoScript('trailer')}>
-            <Sparkles size={12} color="var(--accent-cyan)" />
-            Movie Trailer
-          </button>
-          <button type="button" className="chip-btn" onClick={() => loadDemoScript('ai')}>
-            <Sparkles size={12} color="var(--accent-indigo)" />
-            Sentient AI
-          </button>
-          <button type="button" className="chip-btn" onClick={() => loadDemoScript('keynote')}>
-            <Sparkles size={12} color="var(--accent-amber)" />
-            Tech Keynote
-          </button>
-          <button type="button" className="chip-btn" onClick={() => loadDemoScript('asmr')}>
-            <Sparkles size={12} color="var(--accent-emerald)" />
-            Meditation ASMR
-          </button>
-        </div>
-
-        {/* 3. Text Prompt */}
-        <div className="textarea-wrap">
-          <textarea
-            className="glass-textarea"
-            placeholder="Type or paste text to synthesize with ElevenLabs..."
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            onKeyDown={(e) => {
-              if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-                e.preventDefault();
-                handleGenerate();
-              }
-            }}
-          />
-          <div className="textarea-footer">
-            <span>{wordCount} words</span>
-            <span>{charCount} characters</span>
-            <span style={{ color: 'var(--text-secondary)' }}>Ctrl + Enter to Generate</span>
+          <div className="select-container">
+            <select
+              id="voice-select"
+              className="studio-select"
+              value={voiceId}
+              onChange={(e) => setVoiceId(e.target.value)}
+            >
+              {VOICES.map((v) => (
+                <option key={v.id} value={v.id}>
+                  {v.name} — {v.desc}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 
-        {/* 4. Acoustic Fine-Tuning Drawer */}
-        {showSliders && (
-          <div className="sliders-drawer">
-            <div className="slider-unit">
-              <div className="slider-unit-header">
+        {/* Model Engine */}
+        <div className="control-card">
+          <div className="control-header">
+            <label htmlFor="model-select" className="control-label">Model Engine</label>
+            <span className="control-badge accent">{selectedModel.badge}</span>
+          </div>
+          <div className="select-container">
+            <select
+              id="model-select"
+              className="studio-select"
+              value={modelId}
+              onChange={(e) => setModelId(e.target.value)}
+            >
+              {MODELS.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.name} — {m.desc}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* 4. Acoustic Settings Accordion */}
+      <div className="acoustic-panel">
+        <div className="acoustic-header">
+          <button
+            type="button"
+            className="acoustic-toggle"
+            onClick={() => setShowAcousticDrawer(!showAcousticDrawer)}
+          >
+            <Sliders size={13} />
+            <span>Acoustic Fine-Tuning</span>
+            <span className="drawer-indicator">{showAcousticDrawer ? '▾' : '▸'}</span>
+          </button>
+
+          {showAcousticDrawer && (
+            <button
+              type="button"
+              className="acoustic-reset-btn"
+              onClick={resetAcoustics}
+              title="Reset sliders to defaults"
+            >
+              <RotateCcw size={11} />
+              <span>Defaults</span>
+            </button>
+          )}
+        </div>
+
+        {showAcousticDrawer && (
+          <div className="acoustic-sliders-grid">
+            {/* Stability */}
+            <div className="slider-item">
+              <div className="slider-label-row">
                 <span>Stability</span>
-                <span style={{ color: 'var(--accent-cyan)' }}>{stability.toFixed(2)}</span>
+                <span className="slider-value">{stability.toFixed(2)}</span>
               </div>
               <input
                 type="range"
-                className="slider-input"
+                className="acoustic-range-input"
                 min="0"
                 max="1"
                 step="0.05"
                 value={stability}
                 onChange={(e) => setStability(parseFloat(e.target.value))}
               />
+              <span className="slider-sub">Higher = consistent / Lower = expressive</span>
             </div>
 
-            <div className="slider-unit">
-              <div className="slider-unit-header">
+            {/* Similarity */}
+            <div className="slider-item">
+              <div className="slider-label-row">
                 <span>Similarity Boost</span>
-                <span style={{ color: 'var(--accent-indigo)' }}>{similarity.toFixed(2)}</span>
+                <span className="slider-value">{similarity.toFixed(2)}</span>
               </div>
               <input
                 type="range"
-                className="slider-input"
+                className="acoustic-range-input"
                 min="0"
                 max="1"
                 step="0.05"
                 value={similarity}
                 onChange={(e) => setSimilarity(parseFloat(e.target.value))}
               />
+              <span className="slider-sub">Closeness to original training voice</span>
             </div>
 
-            <div className="slider-unit">
-              <div className="slider-unit-header">
+            {/* Style */}
+            <div className="slider-item">
+              <div className="slider-label-row">
                 <span>Style Exaggeration</span>
-                <span style={{ color: 'var(--accent-pink)' }}>{style.toFixed(2)}</span>
+                <span className="slider-value">{style.toFixed(2)}</span>
               </div>
               <input
                 type="range"
-                className="slider-input"
+                className="acoustic-range-input"
                 min="0"
                 max="1"
                 step="0.05"
                 value={style}
                 onChange={(e) => setStyle(parseFloat(e.target.value))}
               />
+              <span className="slider-sub">Amplifies dramatic emotional inflection</span>
             </div>
           </div>
         )}
+      </div>
 
-        {/* 5. Action Buttons */}
-        <div className="generate-action-bar">
+      {/* 5. Primary Action (Generate Voice) */}
+      <div className="studio-actions-bar">
+        <button
+          type="button"
+          className="generate-primary-btn"
+          disabled={isGenerating}
+          onClick={handleGenerate}
+        >
+          {isGenerating ? (
+            <>
+              <span className="spinner-loader" />
+              <span>Synthesizing Voice...</span>
+            </>
+          ) : (
+            <>
+              <Play size={16} fill="currentColor" />
+              <span>Generate Voice</span>
+            </>
+          )}
+        </button>
+
+        {isPlaying && (
           <button
             type="button"
-            className="generate-btn"
-            disabled={isGenerating}
-            onClick={handleGenerate}
+            className="stop-secondary-btn"
+            onClick={stopAudio}
           >
-            {isGenerating ? (
-              <>
-                <span style={{ width: '16px', height: '16px', border: '2px solid rgba(0,0,0,0.3)', borderTopColor: '#000', borderRadius: '50%', animation: 'spin 0.6s linear infinite' }} />
-                <span>Synthesizing Neural Voice...</span>
-              </>
-            ) : (
-              <>
-                <Play size={18} fill="#000" />
-                <span>Generate &amp; Play</span>
-              </>
-            )}
+            <Square size={13} fill="currentColor" />
+            <span>Stop Playback</span>
           </button>
+        )}
+      </div>
 
-          {isPlaying && (
+      {/* 6. Clean 2D Audio Player */}
+      <div className={`studio-player-container ${audioUrl ? 'has-audio' : 'idle'}`}>
+        <div className="player-meta-row">
+          <div className="player-info">
+            <span className="player-track-name">
+              {audioUrl ? `${selectedVoice.name} — ${selectedModel.name}` : 'No Audio Generated Yet'}
+            </span>
+            <span className="player-time-badge">
+              {formatTime(currentTime)} / {formatTime(duration)}
+            </span>
+          </div>
+
+          <div className="player-meta-actions">
             <button
               type="button"
-              className="stop-playback-btn"
+              className="player-download-btn"
+              disabled={!audioUrl}
+              onClick={downloadAudio}
+              title="Download Generated Audio (MP3)"
+            >
+              <Download size={13} />
+              <span>Download MP3</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Timeline Bar */}
+        <div
+          className="player-timeline"
+          onClick={(e) => {
+            if (!duration) return;
+            const rect = e.currentTarget.getBoundingClientRect();
+            const clickPercent = ((e.clientX - rect.left) / rect.width) * 100;
+            seekAudio(clickPercent);
+          }}
+        >
+          <div
+            className="player-timeline-fill"
+            style={{ width: `${progressPercent}%` }}
+          />
+        </div>
+
+        {/* Player Transport Controls */}
+        <div className="player-controls-row">
+          <div className="player-playback-buttons">
+            <button
+              type="button"
+              className="playback-play-btn"
+              disabled={!audioUrl}
+              onClick={togglePlayPause}
+            >
+              {isPlaying ? <Pause size={15} fill="currentColor" /> : <Play size={15} fill="currentColor" />}
+              <span>{isPlaying ? 'Pause' : 'Play'}</span>
+            </button>
+
+            <button
+              type="button"
+              className="playback-stop-btn"
+              disabled={!audioUrl}
               onClick={stopAudio}
             >
-              <Square size={14} fill="currentColor" />
-              <span>Stop</span>
+              <Square size={12} fill="currentColor" />
+              <span>Reset</span>
             </button>
-          )}
+          </div>
+
+          {/* Volume Control */}
+          <div className="player-volume-control">
+            <Volume2 size={14} className="volume-icon" />
+            <input
+              type="range"
+              className="volume-slider"
+              min="0"
+              max="1"
+              step="0.05"
+              value={volume}
+              onChange={(e) => setVolume(parseFloat(e.target.value))}
+            />
+          </div>
         </div>
       </div>
     </div>

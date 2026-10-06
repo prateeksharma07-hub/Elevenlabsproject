@@ -1,30 +1,32 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" style="background-color: #0C0C0E; min-height: 100%;">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AURA // Neural Acoustic 3D Experience — ElevenLabs AI</title>
   <meta name="description" content="Cinematic 3D voice synthesis experience powered by ElevenLabs. Voice as a physical living world.">
 
+  <style>
+    html, body {
+      background-color: #0C0C0E !important;
+      margin: 0;
+      padding: 0;
+      color: #E8E8EE;
+      overflow-x: hidden;
+    }
+    #root {
+      min-height: 100vh;
+      background-color: #0C0C0E;
+    }
+  </style>
+
   <!-- Premium Typography -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./dist/assets/index.css">
 </head>
-<body>
+<body style="background-color: #0C0C0E; margin: 0; padding: 0;">
   <div id="root"></div>
-
-  <!-- Smart Universal Environment Loader -->
-  <script type="module">
-    const isViteDev = window.location.port === '5173';
-    if (isViteDev) {
-      import('/src/main.tsx');
-    } else {
-      import('./dist/assets/index.js').catch(() => {
-        import('/dist/assets/index.js');
-      });
-    }
-  </script>
+  <script type="module" src="/src/main.tsx"></script>
 </body>
 </html>

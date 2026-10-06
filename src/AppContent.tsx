@@ -24,7 +24,7 @@ export const AppContent: React.FC = () => {
     togglePlayPause,
   } = useStudio();
 
-  // 1. Lenis Smooth Virtual Scrolling synchronized with GSAP
+  // 1. Lenis Smooth Virtual Scrolling synchronized with 3D Canvas
   useEffect(() => {
     const lenis = new Lenis({
       duration: 1.0,
@@ -36,8 +36,24 @@ export const AppContent: React.FC = () => {
 
     (window as any).lenis = lenis;
 
-    lenis.on('scroll', () => {
+    const sections = ['intro', 'studio', 'visualizer', 'translation', 'ending'];
+
+    lenis.on('scroll', ({ progress }: any) => {
       ScrollTrigger.update();
+      setScrollProgress(progress);
+
+      // Robust active scene detection based on section elements in viewport
+      const windowHeight = window.innerHeight;
+      for (let i = 0; i < sections.length; i++) {
+        const el = document.getElementById(sections[i]);
+        if (el) {
+          const rect = el.getBoundingClientRect();
+          if (rect.top <= windowHeight * 0.5 && rect.bottom >= windowHeight * 0.25) {
+            setActiveScene(i + 1);
+            break;
+          }
+        }
+      }
     });
 
     const tickerCallback = (time: number) => {
@@ -47,42 +63,15 @@ export const AppContent: React.FC = () => {
     gsap.ticker.add(tickerCallback);
     gsap.ticker.lagSmoothing(0);
 
-    // 2. ScrollTrigger tracking 500vh scroll corridor
-    const corridor = document.getElementById('scroll-corridor');
-    if (corridor) {
-      ScrollTrigger.create({
-        trigger: corridor,
-        start: 'top top',
-        end: 'bottom bottom',
-        scrub: 0.25,
-        onUpdate: (self) => {
-          const p = self.progress;
-          setScrollProgress(p);
-
-          // Active scene detection
-          if (p < 0.20) {
-            setActiveScene(1);
-          } else if (p < 0.48) {
-            setActiveScene(2);
-          } else if (p < 0.70) {
-            setActiveScene(3);
-          } else if (p < 0.88) {
-            setActiveScene(4);
-          } else {
-            setActiveScene(5);
-          }
-        },
-      });
-    }
-
     return () => {
       gsap.ticker.remove(tickerCallback);
       lenis.destroy();
+      delete (window as any).lenis;
       ScrollTrigger.getAll().forEach((st) => st.kill());
     };
   }, [setScrollProgress, setActiveScene]);
 
-  // 3. Pointer Parallax Tracking
+  // 2. Pointer Parallax Tracking
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       const normalizedX = (e.clientX / window.innerWidth) * 2 - 1;
@@ -94,7 +83,7 @@ export const AppContent: React.FC = () => {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, [setPointer]);
 
-  // 4. Global Keyboard Shortcuts (Space to play/pause when not in input)
+  // 3. Global Keyboard Shortcuts (Space to play/pause when not in inputs)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.code === 'Space') {
@@ -111,25 +100,37 @@ export const AppContent: React.FC = () => {
 
   return (
     <div className="aura-app">
-      {/* 1. Cinematic Non-Blocking Bootloader */}
+      {/* 1. Cinematic Non-Blocking 3D Bootloader (3.5s - 4.5s) */}
       <Preloader />
 
-      {/* 2. Single Persistent 3D WebGL Canvas */}
+      {/* 2. Single Persistent 3D WebGL Canvas (Atmosphere, Core, Waveform) */}
       <CanvasContainer />
 
-      {/* 3. 500vh Virtual Scroll Depth Corridor */}
-      <div className="scroll-corridor" id="scroll-corridor" />
+      {/* 3. Floating Minimal Navigation */}
+      <Navigation />
 
-      {/* 4. Spatial DOM Overlays Viewport */}
-      <div className="hud-viewport">
-        <Navigation />
+      {/* 4. Real Vertical Page Flow (3D = Story, 2D = Product) */}
+      <main className="aura-main-content">
+        <section id="intro" className="page-section section-intro">
+          <Scene01Arrival />
+        </section>
 
-        <Scene01Arrival />
-        <Scene02Studio />
-        <Scene03Visualizer />
-        <Scene04Language />
-        <Scene05Finale />
-      </div>
+        <section id="studio" className="page-section section-studio">
+          <Scene02Studio />
+        </section>
+
+        <section id="visualizer" className="page-section section-visualizer">
+          <Scene03Visualizer />
+        </section>
+
+        <section id="translation" className="page-section section-translation">
+          <Scene04Language />
+        </section>
+
+        <section id="ending" className="page-section section-ending">
+          <Scene05Finale />
+        </section>
+      </main>
 
       {/* 5. Toast Feedback Container */}
       {toast && (
@@ -142,3 +143,5 @@ export const AppContent: React.FC = () => {
     </div>
   );
 };
+
+export default AppContent;

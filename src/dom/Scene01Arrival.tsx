@@ -1,48 +1,65 @@
 import React from 'react';
 import { useStudio } from '../state/studioState';
+import { ArrowDown, Sparkles, Volume2, Radio } from 'lucide-react';
 
 export const Scene01Arrival: React.FC = () => {
-  const { scrollProgress, scrollToScene } = useStudio();
-
-  // Opacity calculation for smooth cinematic dissolution
-  let opacity = 1;
-  if (scrollProgress > 0.12) {
-    opacity = Math.max(0, 1 - (scrollProgress - 0.12) / 0.10);
-  }
-
-  const pointerEvents = opacity > 0.1 ? 'auto' : 'none';
+  const { scrollToScene } = useStudio();
 
   return (
-    <div
-      className="scene-overlay-stage"
-      style={{
-        opacity,
-        pointerEvents,
-        transform: `translateY(${-scrollProgress * 60}px)`,
-        transition: 'opacity 0.1s linear',
-      }}
-    >
-      <div className="hero-stage">
-        <div className="hero-tag">
-          <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--accent-cyan)' }} />
-          Zero-Latency Neural Speech Synthesis
+    <div className="intro-container">
+      <div className="intro-badge">
+        <Sparkles size={12} className="accent-icon" />
+        <span>ElevenLabs Neural Speech Architecture</span>
+      </div>
+
+      <h1 className="intro-title">
+        AURA
+      </h1>
+
+      <p className="intro-tagline">
+        Give words a voice.
+      </p>
+
+      {/* Visual Story: WORDS → VOICE → EXPERIENCE */}
+      <div className="story-flow-diagram">
+        <div className="story-node">
+          <div className="story-step-num">01</div>
+          <div className="story-step-title">WORDS</div>
+          <div className="story-step-desc">Written scripts, dialogue &amp; thoughts</div>
         </div>
 
-        <h1 className="hero-headline">
-          Turn Written Words into<br />
-          <span className="gradient">Cinematic Human Voices</span>
-        </h1>
-
-        <p className="hero-subtitle">
-          Powered by ElevenLabs state-of-the-art acoustic AI. Experience emotional depth, lifelike intonation, and physical sound in a 3D living world.
-        </p>
-
-        <div className="scroll-prompt" onClick={() => scrollToScene(2)}>
-          <div className="mouse-indicator">
-            <div className="mouse-dot" />
-          </div>
-          <span>Scroll to enter 3D Neural Studio</span>
+        <div className="story-connector">
+          <div className="connector-line" />
+          <Radio size={14} className="connector-icon" />
         </div>
+
+        <div className="story-node active">
+          <div className="story-step-num">02</div>
+          <div className="story-step-title">VOICE</div>
+          <div className="story-step-desc">ElevenLabs deep neural acoustic models</div>
+        </div>
+
+        <div className="story-connector">
+          <div className="connector-line" />
+          <Volume2 size={14} className="connector-icon" />
+        </div>
+
+        <div className="story-node">
+          <div className="story-step-num">03</div>
+          <div className="story-step-title">EXPERIENCE</div>
+          <div className="story-step-desc">Lifelike cadence, breath &amp; emotion</div>
+        </div>
+      </div>
+
+      <div className="intro-actions">
+        <button
+          type="button"
+          className="intro-cta-btn"
+          onClick={() => scrollToScene(2)}
+        >
+          <span>Open Voice Studio</span>
+          <ArrowDown size={15} />
+        </button>
       </div>
     </div>
   );

@@ -2,47 +2,55 @@
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700;800&display=swap');
 
 :root {
-  /* Color System */
+  /* Color System — Refined & Restrained Luxury Palette */
   --bg-void: #030509;
-  --bg-void-card: rgba(8, 14, 26, 0.72);
-  --bg-void-card-hover: rgba(12, 22, 40, 0.85);
-  --bg-glass-input: rgba(15, 23, 42, 0.65);
+  --bg-void-deep: #020306;
+  --bg-card: rgba(9, 13, 22, 0.82);
+  --bg-card-hover: rgba(13, 19, 32, 0.9);
+  --bg-input: rgba(14, 20, 32, 0.7);
+  --bg-input-focus: rgba(16, 24, 40, 0.9);
 
-  --accent-cyan: #22d3ee;
-  --accent-indigo: #6366f1;
-  --accent-purple: #a855f7;
-  --accent-pink: #ec4899;
-  --accent-amber: #f59e0b;
-  --accent-emerald: #10b981;
-  --accent-rose: #f43f5e;
+  /* Intentional Accents: One primary, one supporting */
+  --accent-primary: #38bdf8;        /* Precision Electric Cyan */
+  --accent-secondary: #818cf8;      /* Refined Iris / Indigo */
+  --accent-cyan: #38bdf8;
+  --accent-indigo: #818cf8;
 
-  --glow-cyan: rgba(34, 211, 238, 0.35);
-  --glow-indigo: rgba(99, 102, 241, 0.35);
-  --glow-purple: rgba(168, 85, 247, 0.3);
+  /* Status Colors */
+  --status-emerald: #10b981;
+  --status-amber: #f59e0b;
+  --status-rose: #f43f5e;
 
+  /* Subtle Optical Glows */
+  --glow-primary: rgba(56, 189, 248, 0.28);
+  --glow-secondary: rgba(129, 140, 248, 0.25);
+
+  /* Restrained Glass Borders */
   --border-subtle: rgba(255, 255, 255, 0.08);
-  --border-glass: rgba(34, 211, 238, 0.18);
-  --border-glass-focus: rgba(34, 211, 238, 0.6);
+  --border-glass: rgba(255, 255, 255, 0.12);
+  --border-focus: rgba(56, 189, 248, 0.5);
 
+  /* Typography Colors */
   --text-primary: #f8fafc;
   --text-secondary: #94a3b8;
   --text-muted: #64748b;
 
-  /* Typography */
-  --font-display: 'Space Grotesk', -apple-system, sans-serif;
+  /* Typography Fonts */
+  --font-display: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-body: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
-  /* Geometry & Shadows */
+  /* Geometry & Radii */
   --radius-sm: 8px;
-  --radius-md: 14px;
-  --radius-lg: 20px;
-  --radius-xl: 28px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
   --radius-full: 9999px;
 
-  --shadow-ambient: 0 20px 60px rgba(0, 0, 0, 0.8);
-  --shadow-glass: 0 16px 40px rgba(0, 0, 0, 0.6), 0 0 24px rgba(34, 211, 238, 0.06);
-  --shadow-glow: 0 0 30px var(--glow-cyan);
+  /* Shadows */
+  --shadow-ambient: 0 24px 70px rgba(0, 0, 0, 0.85);
+  --shadow-card: 0 16px 40px rgba(0, 0, 0, 0.6), 0 0 1px rgba(255, 255, 255, 0.1);
+  --shadow-btn: 0 8px 24px rgba(56, 189, 248, 0.3);
 }
 
 * {
@@ -64,7 +72,7 @@ html, body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Custom scrollbar */
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
 }
@@ -72,14 +80,14 @@ html, body {
   background: var(--bg-void);
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.14);
   border-radius: var(--radius-full);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--accent-cyan);
+  background: var(--accent-primary);
 }
 
 ::selection {
-  background: rgba(34, 211, 238, 0.3);
+  background: rgba(56, 189, 248, 0.3);
   color: #fff;
 }

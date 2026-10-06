@@ -7,49 +7,38 @@ import { LanguageRings } from './LanguageRings';
 export const SceneWorld: React.FC = () => {
   return (
     <>
-      {/* Void Cosmic Fog */}
-      <fogExp2 attach="fog" args={['#030509', 0.032]} />
+      {/* Void Cosmic Atmospheric Fog */}
+      <fogExp2 attach="fog" args={['#030509', 0.038]} />
 
-      {/* Lighting Architecture */}
-      <ambientLight color="#080e1a" intensity={0.5} />
+      {/* Ambient Lighting Architecture */}
+      <ambientLight color="#070c18" intensity={0.65} />
 
       {/* Main Directional Specular Key */}
       <directionalLight
         color="#ffffff"
-        intensity={1.8}
+        intensity={1.6}
         position={[4, 6, 6]}
       />
 
-      {/* Dramatic Cyan Rim Backlight */}
+      {/* Subtle Precision Rim Backlight */}
       <directionalLight
-        color="#22d3ee"
-        intensity={2.2}
+        color="#38bdf8"
+        intensity={1.8}
         position={[-6, 3, -5]}
       />
 
-      {/* Soft Indigo Fill */}
+      {/* Soft Supporting Iris Fill */}
       <directionalLight
-        color="#6366f1"
-        intensity={1.0}
+        color="#818cf8"
+        intensity={0.9}
         position={[0, -4, 4]}
       />
 
-      {/* Central 3D Visual Objects */}
+      {/* Core 3D Objects */}
       <AuraCore />
       <ParticleField />
       <WaveformRibbon />
       <LanguageRings />
-
-      {/* Deep Space Coordinate Plane */}
-      <mesh position={[0, -3.2, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[40, 40, 32, 32]} />
-        <meshBasicMaterial
-          color="#22d3ee"
-          wireframe={true}
-          transparent={true}
-          opacity={0.035}
-        />
-      </mesh>
     </>
   );
 };

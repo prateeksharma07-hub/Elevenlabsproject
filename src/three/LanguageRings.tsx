@@ -13,14 +13,14 @@ export const LanguageRings: React.FC = () => {
   useFrame((state, delta) => {
     if (!groupRef.current) return;
 
-    // Fade in during Scene 04 (approx 0.65 to 0.88)
+    // Fade in gently during Section 04 Translation (approx 0.65 to 0.88)
     let targetOpacity = 0;
-    if (scrollProgress >= 0.68 && scrollProgress <= 0.86) {
-      targetOpacity = 0.75;
-    } else if (scrollProgress > 0.60 && scrollProgress < 0.68) {
-      targetOpacity = (scrollProgress - 0.60) / 0.08;
-    } else if (scrollProgress > 0.86 && scrollProgress < 0.94) {
-      targetOpacity = 1 - (scrollProgress - 0.86) / 0.08;
+    if (scrollProgress >= 0.65 && scrollProgress <= 0.88) {
+      targetOpacity = 0.65;
+    } else if (scrollProgress > 0.58 && scrollProgress < 0.65) {
+      targetOpacity = (scrollProgress - 0.58) / 0.07;
+    } else if (scrollProgress > 0.88 && scrollProgress < 0.95) {
+      targetOpacity = 1 - (scrollProgress - 0.88) / 0.07;
     }
 
     [ring1, ring2, ring3].forEach((r) => {
@@ -33,20 +33,20 @@ export const LanguageRings: React.FC = () => {
     groupRef.current.visible = targetOpacity > 0.01;
 
     // Multi-axis orbital rotation
-    if (ring1.current) ring1.current.rotation.z += delta * 0.2;
-    if (ring2.current) ring2.current.rotation.x += delta * 0.15;
-    if (ring3.current) ring3.current.rotation.y += delta * 0.18;
+    if (ring1.current) ring1.current.rotation.z += delta * 0.12;
+    if (ring2.current) ring2.current.rotation.x += delta * 0.10;
+    if (ring3.current) ring3.current.rotation.y += delta * 0.08;
   });
 
   return (
     <group ref={groupRef} position={[0, 0, 0]}>
       {/* Outer Polyglot Ring 1 */}
       <mesh ref={ring1} rotation={[0.5, 0, 0]}>
-        <torusGeometry args={[2.6, 0.01, 16, 72]} />
+        <torusGeometry args={[2.5, 0.009, 16, 72]} />
         <meshStandardMaterial
-          color="#ec4899"
-          emissive="#ec4899"
-          emissiveIntensity={0.6}
+          color="#38bdf8"
+          emissive="#38bdf8"
+          emissiveIntensity={0.5}
           transparent={true}
           opacity={0}
         />
@@ -54,11 +54,11 @@ export const LanguageRings: React.FC = () => {
 
       {/* Outer Polyglot Ring 2 */}
       <mesh ref={ring2} rotation={[0, 0.8, 0]}>
-        <torusGeometry args={[3.1, 0.01, 16, 72]} />
+        <torusGeometry args={[2.9, 0.008, 16, 72]} />
         <meshStandardMaterial
-          color="#a855f7"
-          emissive="#a855f7"
-          emissiveIntensity={0.6}
+          color="#818cf8"
+          emissive="#818cf8"
+          emissiveIntensity={0.5}
           transparent={true}
           opacity={0}
         />
@@ -66,11 +66,11 @@ export const LanguageRings: React.FC = () => {
 
       {/* Outer Polyglot Ring 3 */}
       <mesh ref={ring3} rotation={[1.1, 0.4, 0]}>
-        <torusGeometry args={[3.6, 0.008, 16, 72]} />
+        <torusGeometry args={[3.3, 0.007, 16, 72]} />
         <meshStandardMaterial
-          color="#6366f1"
-          emissive="#6366f1"
-          emissiveIntensity={0.5}
+          color="#38bdf8"
+          emissive="#818cf8"
+          emissiveIntensity={0.4}
           transparent={true}
           opacity={0}
         />

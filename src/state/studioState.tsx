@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useRef, useEffect, ReactNode } from 'react';
 import { VOICES, MODELS, DEMO_SCRIPTS, synthesizeSpeech, getActiveApiKey, saveApiKey } from '../services/elevenlabs';
 import { connectAudioElement, sampleAudioFrequencies, AudioFrequencyData } from '../services/audioContext';
+import { voicePlayer } from '../services/voicePlayer';
 import { translateText } from '../services/translation';
 
 interface Toast {
@@ -121,87 +122,57 @@ export const StudioProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     }, 3800);
   };
 
-  // Audio element setup
+  // VoicePlayer Engine integration
   useEffect(() => {
-    const audio = new Audio();
-    audioRef.current = audio;
-
-    audio.addEventListener('loadedmetadata', () => {
-      setDuration(audio.duration || 0);
+    voicePlayer.setVolume(volume);
+    const unsub = voicePlayer.subscribe((st) => {
+      setIsPlaying(st.isPlaying);
+      setCurrentTime(st.currentTime);
+      setDuration(st.duration);
     });
+    return unsub;
+  }, []);
 
-    audio.addEventListener('timeupdate', () => {
-      setCurrentTime(audio.currentTime || 0);
-    });
-
-    audio.addEventListener('play', () => {
-      setIsPlaying(true);
-    });
-
-    audio.addEventListener('pause', () => {
-      setIsPlaying(false);
-    });
-
-    audio.addEventListener('ended', () => {
-      setIsPlaying(false);
-      setCurrentTime(audio.duration || 0);
-    });
-
-    audio.addEventListener('error', () => {
-      setIsPlaying(false);
-      showToast('Audio playback error', 'error');
-    });
-
+  // Global user gesture unlock
+  useEffect(() => {
+    const unlock = () => {
+      voicePlayer.unlockContext();
+    };
+    window.addEventListener('pointerdown', unlock, { passive: true });
+    window.addEventListener('keydown', unlock, { passive: true });
+    window.addEventListener('touchstart', unlock, { passive: true });
     return () => {
-      audio.pause();
-      audio.src = '';
+      window.removeEventListener('pointerdown', unlock);
+      window.removeEventListener('keydown', unlock);
+      window.removeEventListener('touchstart', unlock);
     };
   }, []);
 
   const setVolume = (val: number) => {
     setVolumeState(val);
-    if (audioRef.current) {
-      audioRef.current.volume = val;
-    }
+    voicePlayer.setVolume(val);
   };
 
   const playAudio = () => {
-    if (audioRef.current && audioUrl) {
-      audioRef.current.play().catch(e => {
-        console.warn('Playback error:', e);
-      });
-    }
+    voicePlayer.resume();
   };
 
   const pauseAudio = () => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-    }
+    voicePlayer.pause();
   };
 
   const togglePlayPause = () => {
-    if (isPlaying) {
-      pauseAudio();
-    } else {
-      playAudio();
-    }
+    voicePlayer.togglePlayPause();
   };
 
   const stopAudio = () => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-      setCurrentTime(0);
-      setIsPlaying(false);
-    }
+    voicePlayer.stop();
+    setCurrentTime(0);
+    setIsPlaying(false);
   };
 
   const seekAudio = (percent: number) => {
-    if (audioRef.current && duration > 0) {
-      const targetTime = (percent / 100) * duration;
-      audioRef.current.currentTime = targetTime;
-      setCurrentTime(targetTime);
-    }
+    voicePlayer.seek(percent);
   };
 
   const downloadAudio = () => {
@@ -242,6 +213,7 @@ export const StudioProvider: React.FC<{ children: ReactNode }> = ({ children }) 
       return;
     }
 
+    voicePlayer.unlockContext();
     stopAudio();
     setIsGenerating(true);
 
@@ -262,13 +234,7 @@ export const StudioProvider: React.FC<{ children: ReactNode }> = ({ children }) 
       const newUrl = URL.createObjectURL(blob);
       setAudioUrl(newUrl);
 
-      if (audioRef.current) {
-        audioRef.current.src = newUrl;
-        audioRef.current.volume = volume;
-        connectAudioElement(audioRef.current);
-        audioRef.current.play().catch(() => {});
-      }
-
+      await voicePlayer.loadAndPlayBlob(blob);
       showToast('Neural audio synthesized successfully!', 'success');
     } catch (err: any) {
       console.error('Synthesis error:', err);
@@ -303,11 +269,30 @@ export const StudioProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   };
 
   const scrollToScene = (sceneNum: number) => {
+    const sceneIds: Record<number, string> = {
+      1: 'intro',
+      2: 'studio',
+      3: 'visualizer',
+      4: 'translation',
+      5: 'ending',
+    };
+    const targetId = sceneIds[sceneNum] || 'intro';
+    const elem = document.getElementById(targetId);
+
+    if (elem) {
+      if ((window as any).lenis) {
+        (window as any).lenis.scrollTo(elem, { offset: -20, duration: 1.2 });
+      } else {
+        elem.scrollIntoView({ behavior: 'smooth' });
+      }
+      return;
+    }
+
     const sceneRatios: Record<number, number> = {
       1: 0.0,
-      2: 0.35,
-      3: 0.58,
-      4: 0.78,
+      2: 0.25,
+      3: 0.50,
+      4: 0.75,
       5: 1.0,
     };
     const ratio = sceneRatios[sceneNum] ?? 0.0;
@@ -335,69 +320,77 @@ export const StudioProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     }, 300);
   };
 
+  activeStudioInstance = {
+    text,
+    setText,
+    voiceId,
+    setVoiceId,
+    modelId,
+    setModelId,
+    stability,
+    setStability,
+    similarity,
+    setSimilarity,
+    style,
+    setStyle,
+    isGenerating,
+    loadDemoScript,
+    audioUrl,
+    audioBlob,
+    isPlaying,
+    currentTime,
+    duration,
+    volume,
+    setVolume,
+    seekAudio,
+    playAudio,
+    pauseAudio,
+    togglePlayPause,
+    stopAudio,
+    downloadAudio,
+    handleGenerate,
+    getFrequencyData,
+    transSource,
+    setTransSource,
+    transTarget,
+    setTransTarget,
+    transSourceLang,
+    setTransSourceLang,
+    transTargetLang,
+    setTransTargetLang,
+    isTranslating,
+    handleTranslate,
+    sendToStudio,
+    toast,
+    showToast,
+    scrollProgress,
+    setScrollProgress,
+    activeScene,
+    setActiveScene,
+    scrollToScene,
+    pointer,
+    setPointer,
+  };
+
   return (
-    <StudioContext.Provider
-      value={{
-        text,
-        setText,
-        voiceId,
-        setVoiceId,
-        modelId,
-        setModelId,
-        stability,
-        setStability,
-        similarity,
-        setSimilarity,
-        style,
-        setStyle,
-        isGenerating,
-        loadDemoScript,
-        audioUrl,
-        audioBlob,
-        isPlaying,
-        currentTime,
-        duration,
-        volume,
-        setVolume,
-        seekAudio,
-        playAudio,
-        pauseAudio,
-        togglePlayPause,
-        stopAudio,
-        downloadAudio,
-        handleGenerate,
-        getFrequencyData,
-        transSource,
-        setTransSource,
-        transTarget,
-        setTransTarget,
-        transSourceLang,
-        setTransSourceLang,
-        transTargetLang,
-        setTransTargetLang,
-        isTranslating,
-        handleTranslate,
-        sendToStudio,
-        toast,
-        showToast,
-        scrollProgress,
-        setScrollProgress,
-        activeScene,
-        setActiveScene,
-        scrollToScene,
-        pointer,
-        setPointer,
-      }}
-    >
+    <StudioContext.Provider value={activeStudioInstance}>
+      <audio
+        ref={(el) => {
+          audioRef.current = el;
+          voicePlayer.setDomAudioElement(el);
+        }}
+        id="aura-dom-audio-player"
+        preload="auto"
+        style={{ display: 'none' }}
+      />
       {children}
     </StudioContext.Provider>
   );
 };
 
+let activeStudioInstance: StudioContextType | null = null;
+
 export const useStudio = () => {
   const ctx = useContext(StudioContext);
-  if (!ctx) {
-    throw new Error('useStudio must be used within a StudioProvider');
-  }
-  return ctx;
+  return ctx || activeStudioInstance;
 };

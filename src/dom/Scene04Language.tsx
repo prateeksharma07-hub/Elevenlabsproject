@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useStudio } from '../state/studioState';
 import { LANGUAGES } from '../services/translation';
-import { Globe, ArrowRight, Send } from 'lucide-react';
+import { Globe, ArrowRight, ArrowLeftRight, Send, Copy, Check } from 'lucide-react';
 
 export const Scene04Language: React.FC = () => {
   const {
@@ -15,132 +15,174 @@ export const Scene04Language: React.FC = () => {
     isTranslating,
     handleTranslate,
     sendToStudio,
-    scrollProgress,
+    showToast,
   } = useStudio();
 
-  // Opacity window around Scene 04
-  let opacity = 0;
-  if (scrollProgress >= 0.70 && scrollProgress <= 0.88) {
-    opacity = 1;
-  } else if (scrollProgress > 0.64 && scrollProgress < 0.70) {
-    opacity = (scrollProgress - 0.64) / 0.06;
-  } else if (scrollProgress > 0.88 && scrollProgress < 0.94) {
-    opacity = 1 - (scrollProgress - 0.88) / 0.06;
-  }
+  const [copied, setCopied] = useState(false);
 
-  const pointerEvents = opacity > 0.3 ? 'auto' : 'none';
+  const swapLanguages = () => {
+    const tempLang = transSourceLang;
+    setTransSourceLang(transTargetLang);
+    setTransTargetLang(tempLang);
+
+    if (transTarget) {
+      setTransSource(transTarget);
+    }
+  };
+
+  const copyToClipboard = () => {
+    if (!transTarget) return;
+    navigator.clipboard.writeText(transTarget);
+    setCopied(true);
+    showToast('Copied translated text to clipboard!', 'info');
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   return (
-    <div
-      className="scene-overlay-stage"
-      style={{
-        opacity,
-        pointerEvents,
-        transition: 'opacity 0.1s linear',
-      }}
-    >
-      <div className="glass-console">
-        {/* Section Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '18px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--accent-pink)', background: 'rgba(236, 72, 153, 0.1)', padding: '3px 8px', borderRadius: '4px' }}>
-              03
-            </span>
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-secondary)' }}>
-              Language Portal &amp; Multilingual Dubbing
-            </span>
+    <div className="translation-card-container">
+      {/* 1. Header */}
+      <div className="translation-header">
+        <div className="translation-title-group">
+          <div className="section-kicker">
+            <Globe size={12} />
+            <span>04 // MULTILINGUAL PORTAL</span>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--accent-pink)', fontSize: '12px', fontFamily: 'var(--font-mono)' }}>
-            <Globe size={14} />
-            <span>29+ WORLD LANGUAGES</span>
-          </div>
+          <h2 className="translation-title">GLOBAL TRANSLATION</h2>
         </div>
 
-        {/* Language Selection Row */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '16px' }}>
-          <div style={{ flex: 1 }}>
-            <div className="field-label">Source Language</div>
+        <div className="translation-badge">
+          <span>29+ Supported Languages</span>
+        </div>
+      </div>
+
+      <p className="translation-subtext">
+        Translate any script instantly and transfer the translation straight to the ElevenLabs Studio for seamless multilingual narration.
+      </p>
+
+      {/* 2. Language Selector Bar */}
+      <div className="language-selector-bar">
+        {/* Source Language */}
+        <div className="lang-field-group">
+          <label htmlFor="source-lang-select" className="lang-field-label">Source Language</label>
+          <div className="select-container">
             <select
-              className="glass-select"
+              id="source-lang-select"
+              className="studio-select"
               value={transSourceLang}
               onChange={(e) => setTransSourceLang(e.target.value)}
             >
               {LANGUAGES.map((l) => (
-                <option key={l.code} value={l.code} style={{ background: '#090e17', color: '#fff' }}>
+                <option key={l.code} value={l.code}>
                   {l.flag} {l.name} ({l.native})
                 </option>
               ))}
             </select>
           </div>
+        </div>
 
-          <div style={{ marginTop: '20px', color: 'var(--text-muted)' }}>
-            <ArrowRight size={18} />
-          </div>
+        {/* Swap Button */}
+        <button
+          type="button"
+          className="swap-lang-btn"
+          onClick={swapLanguages}
+          title="Swap source and target languages"
+        >
+          <ArrowLeftRight size={14} />
+        </button>
 
-          <div style={{ flex: 1 }}>
-            <div className="field-label">Target Language</div>
+        {/* Target Language */}
+        <div className="lang-field-group">
+          <label htmlFor="target-lang-select" className="lang-field-label">Target Language</label>
+          <div className="select-container">
             <select
-              className="glass-select"
+              id="target-lang-select"
+              className="studio-select"
               value={transTargetLang}
               onChange={(e) => setTransTargetLang(e.target.value)}
             >
               {LANGUAGES.map((l) => (
-                <option key={l.code} value={l.code} style={{ background: '#090e17', color: '#fff' }}>
+                <option key={l.code} value={l.code}>
                   {l.flag} {l.name} ({l.native})
                 </option>
               ))}
             </select>
           </div>
         </div>
+      </div>
 
-        {/* Text translation inputs */}
-        <div className="control-grid-2" style={{ marginBottom: '16px' }}>
-          <div>
-            <div className="field-label">Original Text</div>
-            <textarea
-              className="glass-textarea"
-              style={{ height: '95px' }}
-              value={transSource}
-              onChange={(e) => setTransSource(e.target.value)}
-              placeholder="Enter text to translate..."
-            />
+      {/* 3. Translation Dual Panes */}
+      <div className="translation-panes-grid">
+        {/* Source Pane */}
+        <div className="trans-pane">
+          <div className="pane-header">
+            <span>Original Script</span>
+            <span className="pane-count">{transSource.length} chars</span>
           </div>
-
-          <div>
-            <div className="field-label">Translated Voice Copy</div>
-            <textarea
-              className="glass-textarea"
-              style={{ height: '95px', color: 'var(--accent-cyan)' }}
-              value={transTarget}
-              readOnly
-              placeholder="Translated speech will materialize here..."
-            />
-          </div>
+          <textarea
+            className="trans-textarea"
+            placeholder="Enter or paste text to translate..."
+            value={transSource}
+            onChange={(e) => setTransSource(e.target.value)}
+            rows={5}
+          />
         </div>
 
-        {/* Actions */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '12px' }}>
-          <button
-            type="button"
-            className="chip-btn"
-            style={{ padding: '10px 18px' }}
-            disabled={isTranslating}
-            onClick={handleTranslate}
-          >
-            <Globe size={14} />
-            <span>{isTranslating ? 'Translating...' : 'Translate'}</span>
-          </button>
-
-          <button
-            type="button"
-            className="generate-btn"
-            style={{ padding: '10px 22px', fontSize: '13px' }}
-            onClick={sendToStudio}
-          >
-            <Send size={14} />
-            <span>Send to Studio &amp; Narrate</span>
-          </button>
+        {/* Target Pane */}
+        <div className="trans-pane target-pane">
+          <div className="pane-header">
+            <span>Translated Output</span>
+            {transTarget && (
+              <button
+                type="button"
+                className="copy-btn"
+                onClick={copyToClipboard}
+                title="Copy translated text"
+              >
+                {copied ? <Check size={12} /> : <Copy size={12} />}
+                <span>{copied ? 'Copied' : 'Copy'}</span>
+              </button>
+            )}
+          </div>
+          <textarea
+            className="trans-textarea target-textarea"
+            placeholder="Translated speech will materialize here..."
+            value={transTarget}
+            readOnly
+            rows={5}
+          />
         </div>
+      </div>
+
+      {/* 4. Action Buttons Bar */}
+      <div className="translation-actions-bar">
+        <button
+          type="button"
+          className="translate-btn"
+          disabled={isTranslating || !transSource.trim()}
+          onClick={handleTranslate}
+        >
+          {isTranslating ? (
+            <>
+              <span className="spinner-loader" />
+              <span>Translating...</span>
+            </>
+          ) : (
+            <>
+              <Globe size={14} />
+              <span>Translate Text</span>
+            </>
+          )}
+        </button>
+
+        <button
+          type="button"
+          className="send-to-studio-btn"
+          disabled={!transTarget && !transSource.trim()}
+          onClick={sendToStudio}
+        >
+          <span>Send to Studio &amp; Narrate</span>
+          <Send size={14} />
+        </button>
       </div>
     </div>
   );

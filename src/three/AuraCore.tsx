@@ -160,8 +160,8 @@ export const AuraCore: React.FC = () => {
       <mesh ref={ring2Ref}>
         <torusGeometry args={[2.05, 0.012, 16, 64]} />
         <meshStandardMaterial
-          color="#a855f7"
-          emissive="#a855f7"
+          color="#818cf8"
+          emissive="#818cf8"
           emissiveIntensity={0.6}
           transparent={true}
           opacity={0.5}

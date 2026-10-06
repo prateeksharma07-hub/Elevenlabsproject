@@ -1,122 +1,110 @@
-import React, { useRef, useMemo, useEffect } from 'react';
+import React, { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useStudio } from '../state/studioState';
 
-const PARTICLE_COUNT = 1400;
+const PARTICLE_COUNT = 1800;
 
 export const ParticleField: React.FC = () => {
   const { getFrequencyData, isPlaying } = useStudio();
-  const meshRef = useRef<THREE.InstancedMesh>(null);
+  const pointsRef = useRef<THREE.Points>(null);
 
-  // Precompute initial positions, velocities, and radii
-  const particleData = useMemo(() => {
-    const data = [];
+  // Precompute cylindrical / orbital coordinates for atmospheric stardust
+  const [positions, initialPositions, velocities, colors] = useMemo(() => {
+    const pos = new Float32Array(PARTICLE_COUNT * 3);
+    const initialPos = new Float32Array(PARTICLE_COUNT * 3);
+    const vel = new Float32Array(PARTICLE_COUNT);
+    const cols = new Float32Array(PARTICLE_COUNT * 3);
+
+    const primaryColor = new THREE.Color('#38bdf8'); // Subtle cyan
+    const neutralColor = new THREE.Color('#94a3b8'); // Soft starlight gray
+    const secondaryColor = new THREE.Color('#818cf8'); // Delicate iris
+
     for (let i = 0; i < PARTICLE_COUNT; i++) {
-      // Cylindrical/toroidal distribution around core
+      const radius = 2.5 + Math.random() * 8.5;
       const angle = Math.random() * Math.PI * 2;
-      const radius = 2.2 + Math.random() * 5.5;
-      const height = (Math.random() - 0.5) * 4.5;
-      const speed = 0.08 + Math.random() * 0.15;
-      const size = 0.015 + Math.random() * 0.035;
+      const y = (Math.random() - 0.5) * 8.0;
 
-      data.push({
-        baseAngle: angle,
-        currentAngle: angle,
-        baseRadius: radius,
-        currentRadius: radius,
-        y: height,
-        baseY: height,
-        speed,
-        size,
-      });
+      const x = Math.cos(angle) * radius;
+      const z = Math.sin(angle) * radius;
+
+      pos[i * 3] = x;
+      pos[i * 3 + 1] = y;
+      pos[i * 3 + 2] = z;
+
+      initialPos[i * 3] = x;
+      initialPos[i * 3 + 1] = y;
+      initialPos[i * 3 + 2] = z;
+
+      vel[i] = 0.05 + Math.random() * 0.12;
+
+      // Color palette: restrained whites and delicate cyan/iris
+      const t = Math.random();
+      let chosenColor: THREE.Color;
+      if (t < 0.55) {
+        chosenColor = neutralColor;
+      } else if (t < 0.85) {
+        chosenColor = primaryColor;
+      } else {
+        chosenColor = secondaryColor;
+      }
+
+      cols[i * 3] = chosenColor.r;
+      cols[i * 3 + 1] = chosenColor.g;
+      cols[i * 3 + 2] = chosenColor.b;
     }
-    return data;
+
+    return [pos, initialPos, vel, cols];
   }, []);
 
-  const dummy = useMemo(() => new THREE.Object3D(), []);
-
-  // Initialize particle instances
-  useEffect(() => {
-    if (!meshRef.current) return;
-    const mesh = meshRef.current;
-    const color = new THREE.Color();
-
-    for (let i = 0; i < PARTICLE_COUNT; i++) {
-      const p = particleData[i];
-      dummy.position.set(
-        Math.cos(p.baseAngle) * p.baseRadius,
-        p.baseY,
-        Math.sin(p.baseAngle) * p.baseRadius
-      );
-      dummy.scale.set(p.size, p.size, p.size);
-      dummy.updateMatrix();
-      mesh.setMatrixAt(i, dummy.matrix);
-
-      // Color variation between cyan and lavender
-      const t = Math.random();
-      if (t < 0.6) {
-        color.set('#22d3ee'); // Cyan
-      } else if (t < 0.85) {
-        color.set('#6366f1'); // Indigo
-      } else {
-        color.set('#ec4899'); // Accent Pink
-      }
-      mesh.setColorAt(i, color);
-    }
-    mesh.instanceMatrix.needsUpdate = true;
-    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
-  }, [particleData, dummy]);
-
-  // Dynamic animation loop
   useFrame((state, delta) => {
-    if (!meshRef.current) return;
-    const mesh = meshRef.current;
+    if (!pointsRef.current) return;
+    const geom = pointsRef.current.geometry;
+    const posAttr = geom.attributes.position;
+    const currentPositions = posAttr.array as Float32Array;
+
     const freq = getFrequencyData();
     const energy = isPlaying ? freq.energy : 0;
     const bass = isPlaying ? freq.bass : 0;
 
-    for (let i = 0; i < PARTICLE_COUNT; i++) {
-      const p = particleData[i];
+    const rotSpeed = 0.04 + energy * 0.08;
+    pointsRef.current.rotation.y += delta * rotSpeed;
 
-      // Orbit rotation
-      p.currentAngle += delta * p.speed * (1 + energy * 1.5);
-
-      // Audio outward expansion
-      const targetRadius = p.baseRadius + (isPlaying ? bass * 1.2 : 0);
-      p.currentRadius = THREE.MathUtils.lerp(p.currentRadius, targetRadius, 0.1);
-
-      // Subtle vertical wave float
-      p.y = p.baseY + Math.sin(state.clock.elapsedTime * 0.8 + p.baseAngle * 2) * 0.18;
-
-      const x = Math.cos(p.currentAngle) * p.currentRadius;
-      const z = Math.sin(p.currentAngle) * p.currentRadius;
-
-      dummy.position.set(x, p.y, z);
-
-      const dynamicScale = p.size * (1 + energy * 0.8);
-      dummy.scale.set(dynamicScale, dynamicScale, dynamicScale);
-
-      dummy.updateMatrix();
-      mesh.setMatrixAt(i, dummy.matrix);
+    // Subtle gentle audio responsiveness: particles breathe slightly with music
+    if (isPlaying) {
+      for (let i = 0; i < PARTICLE_COUNT; i++) {
+        const idx = i * 3;
+        const initialX = initialPositions[idx];
+        const initialZ = initialPositions[idx + 2];
+        const scale = 1 + bass * 0.12;
+        currentPositions[idx] = initialX * scale;
+        currentPositions[idx + 2] = initialZ * scale;
+      }
+      posAttr.needsUpdate = true;
     }
-
-    mesh.instanceMatrix.needsUpdate = true;
   });
 
   return (
-    <instancedMesh
-      ref={meshRef}
-      args={[undefined, undefined, PARTICLE_COUNT]}
-      frustumCulled={false}
-    >
-      <sphereGeometry args={[1, 6, 6]} />
-      <meshBasicMaterial
+    <points ref={pointsRef}>
+      <bufferGeometry>
+        <bufferAttribute
+          attach="attributes-position"
+          args={[positions, 3]}
+        />
+        <bufferAttribute
+          attach="attributes-color"
+          args={[colors, 3]}
+        />
+      </bufferGeometry>
+      <pointsMaterial
+        size={0.038}
+        vertexColors={true}
         transparent={true}
-        opacity={0.65}
+        opacity={0.42}
         blending={THREE.AdditiveBlending}
         depthWrite={false}
+        sizeAttenuation={true}
       />
-    </instancedMesh>
+    </points>
   );
 };

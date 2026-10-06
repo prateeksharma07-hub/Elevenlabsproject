@@ -10,44 +10,38 @@ export const WaveformRibbon: React.FC = () => {
   const ribbonMesh = useRef<THREE.Mesh>(null);
   const geomRef = useRef<THREE.PlaneGeometry>(null);
 
-  // Scene 03 focal visibility
-  // Appears around scrollProgress 0.45 to 0.75
-  const isScene3Active = scrollProgress >= 0.40 && scrollProgress <= 0.80;
-
   useFrame((state) => {
     if (!geomRef.current || !ribbonMesh.current) return;
 
-    // Fade ribbon opacity based on scroll distance into Scene 03
+    // Visibility is active in the Audio section (around 0.38 - 0.68) OR anytime audio is playing
+    const inAudioSection = scrollProgress >= 0.36 && scrollProgress <= 0.68;
+    const shouldShow = inAudioSection || isPlaying;
+
     const mat = ribbonMesh.current.material as THREE.MeshStandardMaterial;
     if (mat) {
       let targetOpacity = 0;
-      if (scrollProgress >= 0.42 && scrollProgress <= 0.74) {
-        targetOpacity = 0.85;
-      } else if (scrollProgress > 0.35 && scrollProgress < 0.42) {
-        targetOpacity = (scrollProgress - 0.35) / 0.07;
-      } else if (scrollProgress > 0.74 && scrollProgress < 0.82) {
-        targetOpacity = 1 - (scrollProgress - 0.74) / 0.08;
+      if (shouldShow) {
+        targetOpacity = isPlaying ? 0.95 : 0.45;
       }
-      mat.opacity = THREE.MathUtils.lerp(mat.opacity, targetOpacity, 0.1);
-      ribbonMesh.current.visible = mat.opacity > 0.01;
+      mat.opacity = THREE.MathUtils.lerp(mat.opacity, targetOpacity, 0.08);
+      ribbonMesh.current.visible = mat.opacity > 0.02;
     }
 
-    if (!isScene3Active && !isPlaying) return;
+    if (!shouldShow) return;
 
     const freq = getFrequencyData();
     const pos = geomRef.current.attributes.position;
     const time = state.clock.elapsedTime;
 
-    // Deform vertices along the ribbon length based on real FFT frequencies
+    // Deform vertices along ribbon based on real FFT frequencies
     for (let i = 0; i <= SEGMENTS; i++) {
       const freqIndex = Math.min(127, Math.floor((i / SEGMENTS) * 64));
       const freqVal = isPlaying ? (freq.raw[freqIndex] || 0) / 255 : 0;
 
-      // Idle ambient sinusoidal wave
-      const idleWave = Math.sin(time * 2 + i * 0.15) * 0.08;
-      const displacement = (freqVal * 0.8) + idleWave;
+      // Subtle ambient idle sine undulation
+      const idleWave = Math.sin(time * 2.5 + i * 0.18) * 0.06;
+      const displacement = (freqVal * 0.85) + idleWave;
 
-      // Top and bottom vertices of the plane segment
       pos.setZ(i * 2, displacement);
       pos.setZ(i * 2 + 1, displacement);
     }
@@ -55,20 +49,20 @@ export const WaveformRibbon: React.FC = () => {
     pos.needsUpdate = true;
     geomRef.current.computeVertexNormals();
 
-    // Gentle floating rotation
-    ribbonMesh.current.rotation.y = time * 0.1;
+    // Subtle axial rotation
+    ribbonMesh.current.rotation.y = time * 0.08;
   });
 
   return (
-    <group position={[0, -0.4, 0]}>
+    <group position={[0, -0.3, 0]}>
       <mesh ref={ribbonMesh} rotation={[-Math.PI / 4, 0, 0]}>
-        <planeGeometry ref={geomRef} args={[6.5, 0.5, SEGMENTS, 1]} />
+        <planeGeometry ref={geomRef} args={[6.8, 0.55, SEGMENTS, 1]} />
         <meshStandardMaterial
-          color="#22d3ee"
+          color="#38bdf8"
           emissive="#6366f1"
-          emissiveIntensity={0.6}
+          emissiveIntensity={0.8}
           roughness={0.2}
-          metalness={0.8}
+          metalness={0.85}
           transparent={true}
           opacity={0.0}
           side={THREE.DoubleSide}

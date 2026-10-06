@@ -4,62 +4,66 @@ import * as THREE from 'three';
 import { useStudio } from '../state/studioState';
 
 export const CameraRig: React.FC = () => {
-  const { scrollProgress, pointer } = useStudio();
+  const { scrollProgress, pointer, isPlaying } = useStudio();
   const { camera } = useThree();
 
-  // 3D Cinematic Spline Curve across the 5 Scenes
+  // 3D Cinematic Spline Curve across the 5 Sections:
+  // 0.00: Intro (Arrival) - camera elevated slightly, core floats gracefully above nodes
+  // 0.25: Studio - camera pulls back to z = 10.2, core becomes a subtle ambient background
+  // 0.50: Audio Arena - close-up view of the 3D reactive waveform ribbon
+  // 0.75: Translation - balanced soft angle
+  // 1.00: Finale - expansive pullback into the cosmic void
   const cameraPath = useMemo(() => {
     return new THREE.CatmullRomCurve3([
-      new THREE.Vector3(0, 0, 7.5),        // 0.00: Scene 01 (Arrival)
-      new THREE.Vector3(0, 0.35, 4.2),     // 0.35: Scene 02 (Studio Console)
-      new THREE.Vector3(1.8, 1.1, 5.0),    // 0.58: Scene 03 (Audio World)
-      new THREE.Vector3(-1.5, 0.4, 4.6),   // 0.78: Scene 04 (Language Portal)
-      new THREE.Vector3(0, 0, 11.2),       // 1.00: Scene 05 (Finale Wide Pullback)
+      new THREE.Vector3(0, 0.35, 7.2),     // 0.00: Intro
+      new THREE.Vector3(0, -0.6, 10.2),    // 0.25: Studio
+      new THREE.Vector3(0, 0.2, 5.4),      // 0.50: Audio Arena
+      new THREE.Vector3(-0.9, 0.2, 7.8),   // 0.75: Translation
+      new THREE.Vector3(0, 0.5, 12.0),     // 1.00: Finale
     ]);
   }, []);
 
-  const targetLookAt = useMemo(() => new THREE.Vector3(0, 0, 0), []);
-  const currentPos = useRef(new THREE.Vector3(0, 0, 7.5));
+  const targetLookAt = useMemo(() => new THREE.Vector3(0, 0.2, 0), []);
+  const currentPos = useRef(new THREE.Vector3(0, 0.35, 7.2));
 
   useFrame(() => {
-    // Clamp progress between 0 and 1
     const p = Math.max(0, Math.min(1, scrollProgress));
 
     // Sample continuous spline position along path
     const splinePos = cameraPath.getPointAt(p);
 
     // Subtle, organic mouse parallax
-    const parallaxX = pointer.x * 0.22;
-    const parallaxY = -pointer.y * 0.16;
+    const parallaxX = pointer.x * 0.15;
+    const parallaxY = -pointer.y * 0.10;
 
     const targetX = splinePos.x + parallaxX;
     const targetY = splinePos.y + parallaxY;
     const targetZ = splinePos.z;
 
-    // Smooth lerp to eliminate any discrete input notches
-    currentPos.current.x = THREE.MathUtils.lerp(currentPos.current.x, targetX, 0.09);
-    currentPos.current.y = THREE.MathUtils.lerp(currentPos.current.y, targetY, 0.09);
-    currentPos.current.z = THREE.MathUtils.lerp(currentPos.current.z, targetZ, 0.09);
+    // Smooth lerp for silky inertia
+    currentPos.current.x = THREE.MathUtils.lerp(currentPos.current.x, targetX, 0.08);
+    currentPos.current.y = THREE.MathUtils.lerp(currentPos.current.y, targetY, 0.08);
+    currentPos.current.z = THREE.MathUtils.lerp(currentPos.current.z, targetZ, 0.08);
 
     camera.position.copy(currentPos.current);
 
     // Dynamic FOV adjustment
     let targetFov = 45;
-    if (p < 0.25) {
-      targetFov = 45;
-    } else if (p < 0.50) {
-      targetFov = 42; // Focused on studio console
-    } else if (p < 0.72) {
-      targetFov = 48; // Expansive audio arena
+    if (p < 0.20) {
+      targetFov = 44;
+    } else if (p < 0.45) {
+      targetFov = 38; // Focused studio view
+    } else if (p < 0.68) {
+      targetFov = isPlaying ? 52 : 46;
     } else if (p < 0.88) {
-      targetFov = 44; // Language rings
+      targetFov = 42;
     } else {
-      targetFov = 50; // Wide finale reveal
+      targetFov = 50;
     }
 
     const persCamera = camera as THREE.PerspectiveCamera;
     if (persCamera.fov) {
-      persCamera.fov = THREE.MathUtils.lerp(persCamera.fov, targetFov, 0.08);
+      persCamera.fov = THREE.MathUtils.lerp(persCamera.fov, targetFov, 0.06);
       persCamera.updateProjectionMatrix();
     }
 

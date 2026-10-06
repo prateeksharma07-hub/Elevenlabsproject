@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useStudio } from '../state/studioState';
 import { VOICES } from '../services/elevenlabs';
-import { Play, Pause, Square, Download, Volume2 } from 'lucide-react';
+import { Play, Pause, Square, Download, Volume2, Activity, Radio } from 'lucide-react';
 
 export const Scene03Visualizer: React.FC = () => {
   const {
@@ -15,21 +15,30 @@ export const Scene03Visualizer: React.FC = () => {
     stopAudio,
     seekAudio,
     downloadAudio,
-    scrollProgress,
+    audioUrl,
+    getFrequencyData,
   } = useStudio();
 
-  // Opacity window around Scene 03
-  let opacity = 0;
-  if (scrollProgress >= 0.50 && scrollProgress <= 0.70) {
-    opacity = 1;
-  } else if (scrollProgress > 0.44 && scrollProgress < 0.50) {
-    opacity = (scrollProgress - 0.44) / 0.06;
-  } else if (scrollProgress > 0.70 && scrollProgress < 0.76) {
-    opacity = 1 - (scrollProgress - 0.70) / 0.06;
-  }
+  const [meterLevels, setMeterLevels] = useState({ bass: 0, mid: 0, treble: 0, energy: 0 });
 
-  const pointerEvents = opacity > 0.3 ? 'auto' : 'none';
-  const selectedVoice = VOICES.find((v) => v.id === voiceId);
+  const selectedVoice = VOICES.find((v) => v.id === voiceId) || VOICES[0];
+
+  // Poll real-time frequency data for DOM frequency bars when playing
+  useEffect(() => {
+    let animId: number;
+    const updateMeters = () => {
+      const data = getFrequencyData();
+      setMeterLevels({
+        bass: Math.round(data.bass * 100),
+        mid: Math.round(data.mid * 100),
+        treble: Math.round(data.treble * 100),
+        energy: Math.round(data.energy * 100),
+      });
+      animId = requestAnimationFrame(updateMeters);
+    };
+    animId = requestAnimationFrame(updateMeters);
+    return () => cancelAnimationFrame(animId);
+  }, [getFrequencyData]);
 
   const formatTime = (secs: number) => {
     const mins = Math.floor(secs / 60);
@@ -40,111 +49,135 @@ export const Scene03Visualizer: React.FC = () => {
   const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
 
   return (
-    <div
-      className="scene-overlay-stage"
-      style={{
-        opacity,
-        pointerEvents,
-        transition: 'opacity 0.1s linear',
-      }}
-    >
-      <div className="glass-console player-dock-card">
-        {/* Section Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--accent-cyan)', background: 'rgba(34, 211, 238, 0.1)', padding: '3px 8px', borderRadius: '4px' }}>
-              02
-            </span>
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-secondary)' }}>
-              Real-Time Waveform &amp; Audio Arena
-            </span>
+    <div className="visualizer-card-container">
+      {/* 1. Header */}
+      <div className="visualizer-header">
+        <div className="visualizer-title-group">
+          <div className="section-kicker">
+            <Activity size={12} />
+            <span>03 // ACOUSTIC RESONANCE</span>
           </div>
+          <h2 className="visualizer-title">AUDIO VISUALIZER</h2>
+        </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: isPlaying ? 'var(--accent-cyan)' : 'var(--text-muted)' }} />
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: isPlaying ? 'var(--accent-cyan)' : 'var(--text-muted)' }}>
-              {isPlaying ? 'ACTIVE FREQUENCIES' : 'IDLE'}
-            </span>
+        <div className="visualizer-badge">
+          <Radio size={12} className={isPlaying ? 'icon-streaming' : ''} />
+          <span>{isPlaying ? 'ACTIVE FREQUENCY ANALYSIS' : 'ANALYSER STANDBY'}</span>
+        </div>
+      </div>
+
+      <p className="visualizer-subtext">
+        Real-time 128-bin Fast Fourier Transform (FFT) analysis driven by the Web Audio API. 
+        Watch the 3D acoustic waveform in the canvas react to the physical frequencies of the synthesized voice.
+      </p>
+
+      {/* 2. Real-Time Frequency Telemetry Meters */}
+      <div className="frequency-telemetry-grid">
+        <div className="frequency-band-card">
+          <div className="band-header">
+            <span>BASS // SUB-250Hz</span>
+            <span className="band-val">{meterLevels.bass}%</span>
+          </div>
+          <div className="meter-track">
+            <div className="meter-fill bass" style={{ width: `${meterLevels.bass}%` }} />
           </div>
         </div>
 
-        {/* Current Track Persona */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: 'rgba(0,0,0,0.3)', borderRadius: 'var(--radius-md)', marginBottom: '14px' }}>
-          <div>
-            <div style={{ fontSize: '14px', fontWeight: 600, color: '#fff' }}>
-              Voice Track: {selectedVoice?.name || 'Synthesized Voice'}
-            </div>
-            <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-              {selectedVoice?.desc}
-            </div>
+        <div className="frequency-band-card">
+          <div className="band-header">
+            <span>MID // VOCAL FORMANT</span>
+            <span className="band-val">{meterLevels.mid}%</span>
           </div>
-          <button
-            type="button"
-            className="chip-btn"
-            style={{ borderColor: 'var(--accent-cyan)', color: 'var(--accent-cyan)' }}
-            onClick={downloadAudio}
-            title="Download Generated Audio (MP3)"
-          >
-            <Download size={14} />
-            <span>Download MP3</span>
-          </button>
+          <div className="meter-track">
+            <div className="meter-fill mid" style={{ width: `${meterLevels.mid}%` }} />
+          </div>
+        </div>
+
+        <div className="frequency-band-card">
+          <div className="band-header">
+            <span>TREBLE // HARMONICS</span>
+            <span className="band-val">{meterLevels.treble}%</span>
+          </div>
+          <div className="meter-track">
+            <div className="meter-fill treble" style={{ width: `${meterLevels.treble}%` }} />
+          </div>
+        </div>
+
+        <div className="frequency-band-card">
+          <div className="band-header">
+            <span>PEAK ENERGY // RMS</span>
+            <span className="band-val">{meterLevels.energy}%</span>
+          </div>
+          <div className="meter-track">
+            <div className="meter-fill energy" style={{ width: `${meterLevels.energy}%` }} />
+          </div>
+        </div>
+      </div>
+
+      {/* 3. Stream Controller Dock */}
+      <div className="visualizer-dock">
+        <div className="dock-track-info">
+          <span className="dock-voice-name">{selectedVoice.name}</span>
+          <span className="dock-voice-desc">{selectedVoice.desc}</span>
         </div>
 
         {/* Timeline Scrubber */}
         <div
-          className="timeline-bar-wrap"
+          className="dock-timeline"
           onClick={(e) => {
+            if (!duration) return;
             const rect = e.currentTarget.getBoundingClientRect();
-            const clickPos = (e.clientX - rect.left) / rect.width;
-            seekAudio(clickPos * 100);
+            const clickPercent = ((e.clientX - rect.left) / rect.width) * 100;
+            seekAudio(clickPercent);
           }}
         >
-          <div className="timeline-fill" style={{ width: `${progressPercent}%` }} />
+          <div className="dock-timeline-fill" style={{ width: `${progressPercent}%` }} />
         </div>
 
-        <div className="time-row">
-          <span>{formatTime(currentTime)}</span>
-          <span>{formatTime(duration)}</span>
-        </div>
+        <div className="dock-controls-row">
+          <div className="dock-time-display">
+            <span>{formatTime(currentTime)}</span>
+            <span>/</span>
+            <span>{formatTime(duration)}</span>
+          </div>
 
-        {/* Player Controls Bar */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '20px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div className="dock-playback-btns">
             <button
               type="button"
-              className="generate-btn"
-              style={{ padding: '10px 22px', fontSize: '13px' }}
+              className="dock-btn-primary"
+              disabled={!audioUrl}
               onClick={togglePlayPause}
             >
-              {isPlaying ? (
-                <>
-                  <Pause size={15} fill="#000" />
-                  <span>Pause</span>
-                </>
-              ) : (
-                <>
-                  <Play size={15} fill="#000" />
-                  <span>Play</span>
-                </>
-              )}
+              {isPlaying ? <Pause size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" />}
+              <span>{isPlaying ? 'Pause' : 'Play'}</span>
             </button>
 
             <button
               type="button"
-              className="chip-btn"
+              className="dock-btn-secondary"
+              disabled={!audioUrl}
               onClick={stopAudio}
             >
-              <Square size={13} />
+              <Square size={12} />
               <span>Stop</span>
+            </button>
+
+            <button
+              type="button"
+              className="dock-btn-secondary"
+              disabled={!audioUrl}
+              onClick={downloadAudio}
+            >
+              <Download size={12} />
+              <span>Download MP3</span>
             </button>
           </div>
 
-          {/* Volume Control */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '160px' }}>
-            <Volume2 size={16} color="var(--text-secondary)" />
+          <div className="dock-volume">
+            <Volume2 size={13} />
             <input
               type="range"
-              className="slider-input"
+              className="volume-slider"
               min="0"
               max="1"
               step="0.05"
